@@ -2,9 +2,8 @@
 ## Group Members
 Aaron Kann, Ian Chang, Jonathan Grothe, Josh Tseng 
 ## Project Type
-Uncertain, but I'm thinking a webpage with visualizations describing
-our findings, and (if time allows) using a server to catch 
-trades as they happen and catch drift in any potential ML models. 
+I'm thinking Data Analysis, in the form of a blog post or a static webpage with visualizatons.
+However, depending on how far we go, this could be a data presentation that allows for interactivity.
 
 ## Questions of interest
 
