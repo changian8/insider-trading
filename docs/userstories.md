@@ -65,3 +65,26 @@ although he might want to know
 data in one page 
 
 # Components
+
+## The Webpage
+
+- this is the story
+- lead with a conclusion, because this is what's important to the non-technical user (binary yes/no we found insider trading)
+- We describe the features that we think are a part of trades insider trading
+- Then, we show a table with the trades that have these features, with clear color coding of their result (for the skimmer)
+- At the bottom lies a link to "methodology" which *Wise Investor* clicks to see a detailed report
+
+## Methodolgy
+- detailed, good writing, maybe a link to the repo
+
+## The Notification
+
+- We have to stick to one, how TBD
+Ideas: 
+- email
+- discord bot
+- twitter bot
+
+- The Notification is not very detailed! A red flag, and the thing we think is gonna happen at most
+- The link goes to our app, which gives the user a more detailed view on the features of this bet and our analysis
+
