@@ -63,3 +63,5 @@ although he might want to know
 - So, we redirect him to somewhere he can make his own opinon based on all the available data
 - We could (time dependant) make a report, or we can just him to Polymarket if they show the relevant
 data in one page 
+
+# Components
