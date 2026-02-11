@@ -34,5 +34,57 @@ are working in the real world, a way for him to interact the data to test his ow
 - Skills: Making even more money, Math and Code and Basic Economics
 
 
+# Use Cases
 
+## The Legislator
+
+- Opens the website and reads the story
+- They then try to understand our argument, although they might skim and only read titles and pictures
+- He then sends the website to his friends so they can read it
+
+## The Degen
+
+- He might read the website, or he might not
+
+- He gets a notification on his phone
+- He then reads it, only to understand what to bet on.  Details are not that important to him,
+although he might want to know
+- He then goes to a trading site of choice and makes a bet based on what we said would work
+(possibly we link to polymarket to this easier for them)
+
+(we probably should warn him about the dangers of a gambling addiction)
+
+## The Wise Investor
+
+- He reads the website thoroughly, and he does so to understand our methodology
+- He looks at the data so that he can make his own hypotheses about what might be trading
+
+- He gets a notification, but he questions our reasoning before he bets
+- So, we redirect him to somewhere he can make his own opinon based on all the available data
+- We could (time dependant) make a report, or we can just him to Polymarket if they show the relevant
+data in one page 
+
+# Components
+
+## The Webpage
+
+- this is the story
+- lead with a conclusion, because this is what's important to the non-technical user (binary yes/no we found insider trading)
+- We describe the features that we think are a part of trades insider trading
+- Then, we show a table with the trades that have these features, with clear color coding of their result (for the skimmer)
+- At the bottom lies a link to "methodology" which *Wise Investor* clicks to see a detailed report
+
+## Methodolgy
+- detailed, good writing, maybe a link to the repo
+
+## The Notification
+
+- We have to stick to one, how TBD
+Ideas: 
+- email
+- discord bot
+- twitter bot
+
+- The Notification is not very detailed! A red flag, and the thing we think is gonna happen at most
+- The link goes to our app, which gives the user a more detailed view on the features of this bet and our analysis
 
