@@ -44,4 +44,3 @@
   5. Account for drift in any models, as insider traders might notice visibility and change patterns accordingly
 
   **Milestone** - we make billions of dollars trading, go viral, get Polymarket banned for good and some traders thrown in jail, etc.  
-  still probably would't get a summer internship tho
