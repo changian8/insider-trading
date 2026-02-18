@@ -34,8 +34,9 @@ that there exist identifiable features that we can use to identify them.
 
 [polymarket API](https://docs.polymarket.com/developers/CLOB/timeseries)
 
-[Unofficial Google Trends API](https://github.com/GeneralMills/pytrends/issues/638), 
+[Unofficial Google Trends API](https://github.com/GeneralMills/pytrends), 
 which worked when I used it in August 2025 so I hope it still works now
 
 second data source is still up for air, and if that API doesn't work 
 we can potentially use [Reddit](https://www.reddit.com/dev/api/) for this goal
+
