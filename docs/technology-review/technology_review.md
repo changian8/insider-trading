@@ -22,15 +22,9 @@ explore the data.
 
 ## 1.2 Technology Requirement
 
-We will need access the Polymarket betting data, which is not the focus of 
-not focus on this technical review as we can use their official API.  
-
-
-Other than that, we would like to get data on the relevance of a term in the public discourse 
-in order to measure the popularity of a topic
-to see whether a bet's amount alligns with the public exposure it is getting.  
-An API that allows us to track the popularity of a term's google search
-seems like a wise choice.  
+We would like to get data on the relevance of a term in the public discourse 
+in order to add model features tracking whether a bet's size aligns with the 
+amount of public exposure the related topic is getting. 
 
 ## 1.3 Use Case Requirements
 
