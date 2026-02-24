@@ -1,3 +1,11 @@
+## Components 
+
+## Market History - Flag Suspicious Trades
+
+## Google Trends - Track Outside World's Attention to the Market
+
+## User History - Corroborate User's Past Behavior, Market History, and Google Trends and Report Level of Concern
+
 ## Project Roadmap and Milestones
 
 ## Part 1 - Exploration
