@@ -1,0 +1,45 @@
+* {
+    background-color: blanchedalmond;
+    text-align: center;
+    font: Georgia, sans-serif;
+}
+
+#header {
+    margin-bottom: 0px;
+}
+
+#authors {
+    margin-top: 0px;
+    font-style: italic;
+}
+
+body {
+    font-family: Times, 'Times New Roman', serif, sans-serif;
+    
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+th, td {
+    border: 1px solid black;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+td {
+    background-color: #fff8dc;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
