@@ -2,7 +2,7 @@
 
 **Course:** Data 515 
 
-**Project:** Insider Trading
+**Project:** Insider Trading Watchdog
 
 **Team Members:** Aaron Kann, Ian Chang, Jonathan Grothe, Josh Tseng  
 
@@ -14,11 +14,23 @@
 
 ## 1.1 Project Overview
 
-Our project want to create an watch dog website on people who are making suspicious insider trading on Polymarket, which allows users to bet on neurous events. 
+As [recent viral bets](https://www.npr.org/2026/01/05/nx-s1-5667232/polymarket-maduro-bet-insider-trading) surrounding current events have gone viral in that the internet suggests blatant insider trading, 
+we wanted to test our hypothesis that insider trading occurs on Polymarket in such a blatant fashion
+that it is obvious to the outside eye,
+and create a "watch dog" website that explains our findings and methodologies to interested users while allowing them to
+explore the data. 
 
 ## 1.2 Technology Requirement
 
-We will need access the Polymarket API which they have an official one, not focus on this technical review, other than that, we want to use Goolge trend to detect the popularity of a topic to see wether a bet's amount alligns with the public exposure it is getting. 
+We will need access the Polymarket betting data, which is not the focus of 
+not focus on this technical review as we can use their official API.  
+
+
+Other than that, we would like to get data on the relevance of a term in the public discourse 
+in order to measure the popularity of a topic
+to see whether a bet's amount alligns with the public exposure it is getting.  
+An API that allows us to track the popularity of a term's google search
+seems like a wise choice.  
 
 ## 1.3 Use Case Requirements
 
@@ -26,7 +38,7 @@ List the functional and technical requirements.
 
 **Functional requirements:**
 - Retrieve interest over time for keywords
-- Retrieve related quarry
+- Retrieve related queries
 - Support geographic filtering
 - Able to filter for a period of time
 
@@ -57,6 +69,7 @@ We evaluated the following three libraries:
 
 **Summary:**  
 Pytrends is an unoffical Google trend library, which reverse engineers Google trends request and retrieves trend data without paying for an API key.
+
 **Key Features:**
 - Interest over time
 - Interest by region
@@ -93,7 +106,6 @@ SerpApi provides a structured API to retrieve Google Trends data reliably. It us
 ```bash
 pip install google-search-results
 ```
-
 ## 2.3 Library 3: Trendspyg
 
 **Author:** Open-source community  
@@ -153,7 +165,9 @@ Above is the first several rows of the datagrame we obtain from pytrends.
 
 ## 3.2 SerpApi
 
-Unfortunely this Api cost money to get the Api key, does not fit into our technical requirement, efficient for repeated queries.
+As this API costs money to use, it is impracitcal to use this API at scale.
+
+Thus, unfortunately, we will not test this API as it does not fit into our technical requirements.
 
 ## 3.3 Trendpyg
 
@@ -169,7 +183,8 @@ for trend in trends[:500]:
 
 ```
 
-The output gives us the click rate of the current articles, and able to filter for geo location, however it is a lot harder to filter for the key words that we would be intrested for.
+The output gives us the click rate of the current articles, and able to filter for geo location as well.
+However, it is a lot harder to filter for the key words that we would be interested for.
 
 example of output 
 ```
@@ -186,8 +201,24 @@ bobby cannavale - 200+
 
 # 4. Final Choice
 
-After installing the three different python libraries, we decided on the pytrends. Pytrends offers a simple bridge to Google trends intrest over a specific period for free, which is something the other two cannot be done easily, trendpyg has to download the information in the past hours and process from there or SerpApi only gives a small amount of free request, anything more we will need to pay. Pytrends also allows users to find the intrest of a list of words during a period of time, where each word is compared to others search counts, allows us to request a list of related words. 
+After installing the three different python libraries, we decided to officially use the pytrends API. 
+Pytrends offers a simple bridge to Google trends intrest over a specific period for free.
+The other two solve this issue but add additional complexity not worth taking on;
+trendpyg requires to download the information in the past hours and process from there,
+whereas SerpApi only gives a small amount of free request, anything more we will need to pay.
+
+Pytrends also allows users to find the intrest of a list of words during a period of time, where each word is compared to others search counts, allows us to request a list of related words. 
 
 # 5. Limitations of the Technology 
 
-Pytrends is easy to use and fits the functional and technical requirements we need such as filtering for geo location, a period of time, and search for a word list. However, it does not have some limitations, for example, due to the methodlogy of the unofficial library, it is unable to give us the eaxat serach counts for the keywords, instead it gives us a relative intrest of certain word over time and normalize it, so a number from 0 - 100, where 100 means during that period of time that word has the most serach compare to all the words in the list through the whole period. A solution we thought of to overcome this issue is by including very steady high search words in the key word list as an anchor, such as words like facebook or instagram all have similar high intrest on a given time. Althugh not perfect, bu it will be the closest proxy we can obtain. Another concern is since it is an unoffical libary maintained by open source community, it means if Google changes the backend, the whole libary could stop working immideitly. 
+Pytrends is easy to use and fits the functional and technical requirements we need such as filtering for geolocation,
+a period of time, and search for a word list. 
+However, it does have some limitations.
+
+For example, due to the methodology of the library, it is unable to give us the exact search counts for the keywords, instead giving us a relative intrest of certain word over time and normalizing it as a number from 0 - 100, where 100 means during that period of time that word has the most seraches compared to all the words in the list throughout the entire period. 
+A solution we thought of in order to overcome this issue is including very steady high search words in the key word list as an anchor, such as words like facebook or instagram, all have similar high intrest on a given time.
+Although not perfect, it will be the closest proxy we can reasonably obtain. 
+
+Another concern is since it is an unoffical libary maintained by an open source community, it means if Google changes the backend, the whole libary could stop working immidiately.  
+This would be an issue worth addressing if we got to the extended phases of this project and wanted to implement a live tracker, however, we have defined the scope of the project for the sake of DSE515 to end at a data analysis and written report.
+Therefore, we believe the pytrends API, which has been used by previous group project members for personal projects over 6 months ago, to be a safe option to work for the remaining three-week class sprint as we attempt to scale the project. 
