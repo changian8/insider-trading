@@ -70,6 +70,43 @@ data in one page
 
 ## The Webpage
 
+Our webpage is our main software component. This is what we present our story with. In our website, 
+we turn complex trading disclosures into a clear and detailed presentation for any audience to view. 
+Our dashboard will contain trades for a filtered period of time that the user wants to look at.
+The user can filter towards any market that they are interested in and scroll through each separate trade.
+For each trade block, we have a icon showing the probability that the trade can be identified as an insider trade,
+as well as information on the trade such as the trade amount, what time, the market that the trade was made in, 
+as well as user information and any other factor that might show the possibility of an insider trade.
+Our site will also include real time alerts as trades get processed on our website to prioritize recent trades
+that were flagged by our algorithm. 
+
+This way users such as legal workers can utilize the dashboard by filtering specific times and markets, 
+using the interactive trade blocks to view more recent and higher probability insider trades to investigate.
+They can click into each trade block to see the data on the trade such as when the trade was made,
+how much was traded and the user information, so they can see why our algorithm flagged it as a high probable 
+insider trade. Using our dashboard, they can quickly spot suspicious trades and patterns, investigating unusual
+trades around certain markets so they can shorten investigation time and hunt down insider trades quicker and focus
+on catching them.
+
+Our site will also include visual timelines of trades for each market, comparing the popularity of a market
+in a time series chart which could raise higher suspiciouns.We plan to also have network maps of user trades 
+to see their patterns on trading throughout markets, and simple trade summaries on when and how much they traded, 
+legal investigators to further conduct investigations and use the pattern data to further identify and predict 
+insider trades.
+
+
+## Webpage sub components
+
+- Main component is the dashboard containing trade blocks and visual representations of trades thoughout time
+for a given filter of market and timestamp
+
+- Trade blocks for each trade that happens for the given filters, containing data on each trade which 
+users can click into including who made the trade, how much, and the probability it was an insider trade.
+
+- Each trade block contains a color coded probability icon showing the probability it is insider trade so that 
+any user who just wants to quickly skim and identify suspicious trades can quickly scroll and investigate the 
+higher probability insider trades
+
 - this is the story
 - lead with a conclusion, because this is what's important to the non-technical user (binary yes/no we found insider trading)
 - We describe the features that we think are a part of trades insider trading
