@@ -1,10 +1,12 @@
 # User Stories
 
-## A Legislator - Senator H
-- Wants:  A person, such as us, who is looking at our results out of curiousity
+## The Policy-Curious High Level Reader
+- Wants:  A person who wants to quickly glance at the page and understand the conclusion that we drew
+without getting into low-level details about our methodology and data
 
-- Interaction Methods: He looks at the webpage to learn, probably low tech, mostly cares about 
-the conclusion more than the methodology
+- Interaction Methods: They look at the webpage to learn, probably low tech, mostly cares about 
+the conclusion more than the methodology.
+Visual appeal matters to them, so use of green/red coloring to match the conclusion that our data
 
 - Needs: An easily digestable story from us, a conclusion to understand
 
