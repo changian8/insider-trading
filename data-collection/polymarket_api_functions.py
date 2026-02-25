@@ -4,6 +4,8 @@ import time
 import requests, json
 from datetime import datetime
 
+# Helper functions
+
 def date_to_unix(date):
     '''
     Takes in a date in mm/dd/yyyy format and returns the appropriate unix date
@@ -12,10 +14,12 @@ def date_to_unix(date):
     date_unix = int(date_dt.timestamp())
     return(date_unix)
 
+
 def unix_to_date(unix):
     unix_dt = datetime.fromtimestamp(unix)
     mdy = unix_dt.strftime("%m/%d/%Y/%H:%M:%S")
     return mdy
+
 
 def get_clob(market):
     '''
@@ -24,6 +28,8 @@ def get_clob(market):
     clob_list = json.loads(market[0]['clobTokenIds'])
     return clob_list
 
+
+# Price History
 def price_at_time(clob,time,interval = 172800):
     '''
     clob: the market clob
@@ -37,6 +43,23 @@ def price_at_time(clob,time,interval = 172800):
     history_json = history.json()
     return history_json['history']
 
+
+def trades_hist(size_list):
+    '''
+    Takes a Json which contains all the trades a user has made
+    Plots a histogram of the sizes of the trades they have made
+    And returns a numerical summary of the sizes
+    '''
+    plt.hist(size_list)
+    plt.show()
+    num_trades = len(size_list)
+    size_sd = np.std(size_list)
+    quartiles = np.quantile(size_list, [0.25,0.5,0.75])
+    dictionary = {'number of trades':num_trades, "quartiles": quartiles, "standard deviation":size_sd}
+    return dictionary
+
+
+# Filtering trades
 def flag_users(trades_json,price_cutoff):
     '''
     This function filters the flagged high volume trades beyond what we can do in the API query
@@ -54,6 +77,31 @@ def flag_users(trades_json,price_cutoff):
             print(f"size: {trade_info['size']}")
             print(f"price: {trade_info['price']}")
 
+
+def filter_trades(cond_id, min_size, min_price=0.05, max_price=0.95,limit=500):
+    '''
+    Perform the API query to get suspicious trades. Designed to filter as much as possible in the query.
+    This should be combined with previous work
+    cond_id: the market
+    min_size: the minimum size of the trade in USD
+    min_price, max_price: sets limits on the price (see if this is actually important later)
+    limit: the max number of trades to fetch
+    '''
+    url = f"https://data-api.polymarket.com/trades?limit={limit}&takerOnly=true&market={cond_id}&filterType=CASH&side=BUY&filterAmount={min_size}"
+    trades = requests.get(url)
+    trades_json = trades.json()
+    num_trades = len(trades_json)
+    if num_trades == limit:
+        #could either increase limit or increase min size
+        new_url = f"https://data-api.polymarket.com/trades?limit={limit}&takerOnly=true&market={cond_id}&filterType=CASH&side=BUY&filterAmount={min_size*1.5}"
+        trades = requests.get(new_url)
+        trades_json = trades.json()
+    #also need to filter for the price range
+    #need to think of a good way to ensure that we get all the trades in the market that meet our conditions 
+    #(or we need to change our conditions so we get all possible trades)
+
+
+# User History
 def user_history(user_id,limit=1000):
     '''
     user_id: proxywallet hex code, which is unique to a user
@@ -106,39 +154,24 @@ def user_history(user_id,limit=1000):
         prev_length = len(new_json)
     return [sides,sizes,prices,timestamps,outcomes,slugs,condition_ids]
 
-def trades_hist(size_list):
+def analyze_history(user_history_data):
     '''
-    Takes a Json which contains all the trades a user has made
-    Plots a histogram of the sizes of the trades they have made
-    And returns a numerical summary of the sizes
+    Takes information about a user's history and returns a set of metrics to evaluate how suspicious they are
+    user_history_data: the user history data from the user_history function
+    Returns: list of metrics, 
     '''
-    plt.hist(size_list)
-    plt.show()
-    num_trades = len(size_list)
-    size_sd = np.std(size_list)
-    quartiles = np.quantile(size_list, [0.25,0.5,0.75])
-    dictionary = {'number of trades':num_trades, "quartiles": quartiles, "standard deviation":size_sd}
-    return dictionary
 
-def filter_trades(cond_id, min_size, min_price=0.05, max_price=0.95,limit=500):
+
+def filter_users(trades):
     '''
-    Perform the API query to get suspicious trades. Designed to filter as much as possible in the query.
-    This should be combined with previous work
-    cond_id: the market
-    min_size: the minimum size of the trade in USD
-    min_price, max_price: sets limits on the price (see if this is actually important later)
-    limit: the max number of trades to fetch
+    For each flagged trade, go find the user's history, and analyze it
+    Retun a dataframe with metrics for each trade, which can be merged with other details about that trade that might indicate suspicion
+    trades: a json of flagged trades
     '''
-    url = f"https://data-api.polymarket.com/trades?limit={limit}&takerOnly=true&market={cond_id}&filterType=CASH&side=BUY&filterAmount={min_size}"
-    trades = requests.get(url)
-    trades_json = trades.json()
-    num_trades = len(trades_json)
-    if num_trades == limit:
-        #could either increase limit or increase min size
-        new_url = f"https://data-api.polymarket.com/trades?limit={limit}&takerOnly=true&market={cond_id}&filterType=CASH&side=BUY&filterAmount={min_size*1.5}"
-        trades = requests.get(new_url)
-        trades_json = trades.json()
-    #also need to filter for the price range
-    #need to think of a good way to ensure that we get all the trades in the market that meet our conditions 
-    #(or we need to change our conditions so we get all possible trades)
+
+
+
+
+
+
     
