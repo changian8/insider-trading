@@ -76,20 +76,3 @@ Inputs: Our data frame of user suspicion levels.
 
 Outputs: A small set of suspicious trades
 
-## Webpage sub components
-
-- Main component is the dashboard containing trade blocks and visual representations of trades thoughout time
-for a given filter of market and timestamp
-
-- Trade blocks for each trade that happens for the given filters, containing data on each trade which 
-users can click into including who made the trade, how much, and the probability it was an insider trade.
-
-- Each trade block contains a color coded probability icon showing the probability it is insider trade so that 
-any user who just wants to quickly skim and identify suspicious trades can quickly scroll and investigate the 
-higher probability insider trades
-
-- this is the story
-- lead with a conclusion, because this is what's important to the non-technical user (binary yes/no we found insider trading)
-- We describe the features that we think are a part of trades insider trading
-- Then, we show a table with the trades that have these features, with clear color coding of their result (for the skimmer)
-- At the bottom lies a link to "methodology" which *Wise Investor* clicks to see a detailed report
