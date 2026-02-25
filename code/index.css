@@ -18,6 +18,13 @@ body {
     
 }
 
+p {
+    max-width: 800px;
+    margin: 40px auto;
+    text-align: left;
+    
+}
+
 table {
     border-collapse: collapse;
     width: 100%;
