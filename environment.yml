@@ -1,0 +1,7 @@
+name: insider-trading
+channels:
+  - defaults
+dependencies:
+  - python=3.14
+  # probably add numpy and pandas as well
+  # also add the pytrends library
