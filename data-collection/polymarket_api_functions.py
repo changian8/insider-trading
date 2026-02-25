@@ -25,20 +25,29 @@ def get_clob(market):
     return clob_list
 
 def price_at_time(clob,time,interval = 172800):
-    #may want to provide possibility of getting clob if given slug?
-    #and convert time to unix from mm/dd/YY if interested
-    #we're going to go back and forward a week? which is 
+    '''
+    clob: the market clob
+    time: time we are interested in flagging 
+    interval: the interval we are interested - distance in both directions from time
+    returns the price history over a specified interval around a time of interest
+    '''
     startt = time - interval
     history_url = f"https://clob.polymarket.com/prices-history?market={clob}&startTs={startt}"
     history = requests.get(history_url)
     history_json = history.json()
     return history_json['history']
 
-def flag_users(trades_json,price_cutoff,trade_outcome):
+def flag_users(trades_json,price_cutoff):
+    '''
+    This function filters the flagged high volume trades beyond what we can do in the API query
+    If we think of more criteria to filter by that are not available in query add them here
+    trades_json: takes a json of trades (should be filtered to exclude small trades and potentially by date of trade as well)
+    prices_cutoff: a maximum price the user is trading at (ensure that the user isn't making massive trades that have 95%+ probability)
+    '''
     flagged_users = []
     for i in range(len(trades_json)):
         trade_info = trades_json[i]
-        if trade_info['price'] < price_cutoff and trade_info['outcome']==trade_outcome:
+        if trade_info['price'] < price_cutoff:
             print("trade flagged")
             print(f"wallet: {trade_info['proxyWallet']}")
             flagged_users.append(trade_info['proxyWallet'])
@@ -47,9 +56,10 @@ def flag_users(trades_json,price_cutoff,trade_outcome):
 
 def user_history(user_id,limit=1000):
     '''
-    Takes a user_id (proxywallet hex code) and a limit (max is 1000, which is the default) 
+    user_id: proxywallet hex code, which is unique to a user
+    limit: number of trades returned in one use of the API (max is 1000, which is the default) 
     Returns a list of lists with information about each trade that user has made
-    Info is the side of the trade they are on, the size of the trade, 
+    lists: side of the trade they are on, the size of the trade, 
     the price, the timestamp, the outcome they are betting on, 
     the slug and the condition ID of the trade 
     '''
@@ -58,7 +68,6 @@ def user_history(user_id,limit=1000):
     user_trades = requests.get(user_url)
     user_trades_json = user_trades.json()
     
-    #now we will iterate through the json and add all of the features we need to a list
     #this will allow us to easily expand past the limit of 1000 trades 
     #and ensures that we don't store useless info like the users profile picture
     sides = []
@@ -113,6 +122,8 @@ def trades_hist(size_list):
 
 def filter_trades(cond_id, min_size, min_price=0.05, max_price=0.95,limit=500):
     '''
+    Perform the API query to get suspicious trades. Designed to filter as much as possible in the query.
+    This should be combined with previous work
     cond_id: the market
     min_size: the minimum size of the trade in USD
     min_price, max_price: sets limits on the price (see if this is actually important later)
