@@ -16,6 +16,9 @@ def date_to_unix(date):
 
 
 def unix_to_date(unix):
+    '''
+    Takes in a unit timestamp and returns the date in m/d/y/h:m:s
+    '''
     unix_dt = datetime.fromtimestamp(unix)
     mdy = unix_dt.strftime("%m/%d/%Y/%H:%M:%S")
     return mdy
@@ -141,7 +144,7 @@ def user_history(user_id,limit=1000):
     prev_length = len(user_trades_json)
     offset = limit
     #idk how much we need this but probably best practice to have a little sleep
-    time.sleep(1)
+    time.sleep(5)
     while prev_length == limit:
         print("user has traded more than limit")
         new_url = f"https://data-api.polymarket.com/trades?user={user_id}&limit={limit}&offset={offset}"
@@ -150,6 +153,8 @@ def user_history(user_id,limit=1000):
         for new_item in new_json:
             # CURRENTLY GETTING AN ERROR HERE, IDK what it is because it was working for the previous test user, 
             # will look into it later
+            if new_item == 'error':
+                continue
             sides.append(new_item['side'])
             sizes.append(new_item['size'])
             prices.append(new_item['price'])
@@ -213,6 +218,7 @@ def analyze_history(user_history_data,sus_trade):
 
 
 # basic set up stuff
+'''
 jan_thirty_unix = date_to_unix("01/30/2026")
 jan_thirtyone_unix = date_to_unix("01/31/2026")
 jan_third_unix = date_to_unix("01/03/2026")
@@ -223,6 +229,9 @@ maduro_filter_url = f"https://gamma-api.polymarket.com/markets?order=id&ascendin
 maduro_response = requests.get(maduro_filter_url)
 maduro_info = maduro_response.json()
 maduro_cond_id = maduro_info[0]['conditionId']
+
+
+
 
 # getting all trades on the maduro bet that have size more than 500 
 # (this is a bit imperfect but based on this I don't think we'll run into API limits)
@@ -241,24 +250,58 @@ actually_sus = filter_trades(sus_trades, 5000, invasion_time)
 for item in actually_sus:
     sus_history = user_history(item[4]) 
     analyze_history(sus_history,item)
+    '''
+
+# IRAN INSIDER TRADERS
+
+#users were linked in the tweet 
+
+import pandas as pd
+dicedicedice = "0xdde15ebd95330ce69136dc0ccd810d22382e02c5"
+neodbs = "0x56efadc9defe5b7a21af751e0d026f2cf54136db"
+planktonbets = "0x38745db27f7360a287f6ca3c9b6a6a9c76149801"
+unnamed_1 = "0x1caa6a7ad0c6916aef7b67946de2e57ad24846a0"
+nothingeverhappens911 = "0xa4eb52229991c074bc560f825bf2776d77acd010"
+
+#initializing empty lists to build dataframe of all users data
+names_list = [dicedicedice,neodbs,planktonbets,unnamed_1]
+sides = []
+sizes = []
+prices = []
+potential_winnings = []
+timestamps = []
+outcomes = []
+slugs = []
+condition_ids = []
+names = []
+for item in names_list:
+    user_info = user_history(item)
+    sides.extend(user_info[0])
+    sizes.extend(user_info[1])
+    prices.extend(user_info[2])
+    potential_winnings.extend(user_info[3])
+    timestamps.extend(user_info[4])
+    outcomes.extend(user_info[5])
+    slugs.extend(user_info[6])
+    condition_ids.extend(user_info[7])
+    this_name = [item] * len(user_info[0])
+    names.extend(this_name)
+
+user_data = [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids,names]
+users_zipped = list(zip(*user_data))
+user_df = pd.DataFrame(users_zipped)
+user_df.columns = ['sides','sizes','prices','potential_winnings','timestamps','outcomes','slugs','condition_ids','names']
+print(np.shape(user_df))
+print(user_df.head())
+user_df.to_csv('Iran_insider_traders_trades_info.csv',index=False)
 
 
-'''
-hist_ex = user_history('0x83a296505eb520c9d35823571204ced41fd69452')
-print(np.mean(hist_ex[1]))
-print(np.std(hist_ex[1]))
-print(np.percentile(hist_ex[1],99))
-print(len(hist_ex))
-print(len(hist_ex[1]))
+            
 
-for i in range(15):
-    price = hist_ex[2][i]
-    size = hist_ex[1][i]
-    expected_price = (1/price)*size
-    print(f'price: {price}')
-    print(f'size: {size}')
-    print(f'expected winnings: {expected_price}')
-'''
+
+
+
+
 
 
     
