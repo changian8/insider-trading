@@ -24,14 +24,6 @@ def unix_to_date(unix):
     return mdy
 
 
-def get_clob(market):
-    '''
-    Takes in the market json and returns the two clob ids (idk why there are 2)
-    '''
-    clob_list = json.loads(market[0]['clobTokenIds'])
-    return clob_list
-
-
 # Price History
 def price_at_time(clob,time,interval = 172800):
     '''
@@ -47,7 +39,7 @@ def price_at_time(clob,time,interval = 172800):
     return history_json['history']
 
 
-# getting the trades
+# getting the trades - BECOMES REDUNDANT WITH IAN'S WORK
 def get_trades(cond_id, min_size,limit=1000):
     '''
     Perform the API query to get suspicious trades. Designed to filter as much as possible in the query.
@@ -72,6 +64,7 @@ def get_trades(cond_id, min_size,limit=1000):
 
 
 # taking the trades we got that are a certain size and filtering them down to what is actually interesting
+# May be made redundant with Ian's code
 def filter_trades(trades_json,winnings_cutoff,timestamp):
     '''
     This function filters the flagged high volume trades beyond what we can do in the API query
@@ -106,7 +99,6 @@ def filter_trades(trades_json,winnings_cutoff,timestamp):
     return [sizes, prices, timestamps, outcomes, users]
 
 
-# User History
 def user_history(user_id,limit=1000):
     '''
     user_id: proxywallet hex code, which is unique to a user
@@ -151,9 +143,8 @@ def user_history(user_id,limit=1000):
         new_trades = requests.get(new_url)
         new_json = new_trades.json()
         for new_item in new_json:
-            # CURRENTLY GETTING AN ERROR HERE, IDK what it is because it was working for the previous test user, 
-            # will look into it later
             if new_item == 'error':
+                #I think this is just running into API rate limits because I only had problems when I was past 4000 trades fetched
                 continue
             sides.append(new_item['side'])
             sizes.append(new_item['size'])
@@ -216,9 +207,9 @@ def analyze_history(user_history_data,sus_trade):
     print(f"date of the sus trade: {trade_date}")
     print(f"number of trades earlier than sus date: {date_earlier}")
 
-
-# basic set up stuff
 '''
+#basic set up stuff
+
 jan_thirty_unix = date_to_unix("01/30/2026")
 jan_thirtyone_unix = date_to_unix("01/31/2026")
 jan_third_unix = date_to_unix("01/03/2026")
@@ -229,6 +220,8 @@ maduro_filter_url = f"https://gamma-api.polymarket.com/markets?order=id&ascendin
 maduro_response = requests.get(maduro_filter_url)
 maduro_info = maduro_response.json()
 maduro_cond_id = maduro_info[0]['conditionId']
+print(json.dumps(maduro_info,indent=2))
+print(maduro_cond_id)
 
 
 
@@ -239,7 +232,7 @@ sus_trades = get_trades(maduro_cond_id, 500)
 print(len(sus_trades))
 
 # this filters based on the expected payout: 
-#   we're really probably more interested in expected profit than size because it's interepretation is so dependent on price
+# we're really probably more interested in expected profit than size because it's interepretation is so dependent on price
 num_actually_sus = 0
 sus_traders = []
 # we can see that most of the trades we classify as 'sus' trades here are actually after the invasion and realtively cheap
@@ -250,7 +243,8 @@ actually_sus = filter_trades(sus_trades, 5000, invasion_time)
 for item in actually_sus:
     sus_history = user_history(item[4]) 
     analyze_history(sus_history,item)
-    '''
+    
+'''
 
 # IRAN INSIDER TRADERS
 
