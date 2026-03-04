@@ -19,12 +19,14 @@ def get_trades(event_slug, limit=1000):
 
     #first_market = data["markets"][0]
 
-    first_market = next(
-        m for m in data["markets"]
-        if m.get("slug") == 'will-lady-gaga-perform-during-the-super-bowl-lx-halftime-show'
-    )
+    # first_market = next(
+    #     m for m in data["markets"]
+    #     if m.get("slug") == 'will-lady-gaga-perform-during-the-super-bowl-lx-halftime-show'
+    # )
 
-    cID = first_market['conditionId']
+    #cID = first_market['conditionId']
+
+    cID = '0x3488f31e6449f9803f99a8b5dd232c7ad883637f1c86e6953305a2ef19c77f20'
 
     trades_url = f"https://data-api.polymarket.com/trades?limit={limit}&takerOnly=true&market={cID}&filterType=CASH&filterAmount=50"
 
@@ -36,7 +38,7 @@ def get_trades(event_slug, limit=1000):
 
     return(json_trades)
 
-event_slug = 'who-will-perform-at-super-bowl-halftime-show'
+event_slug = 'us-strikes-iran-by'
 # 'us-strikes-iran-by'
 # 'will-there-be-a-streaker-at-super-bowl-lix'
 # 'who-will-perform-at-super-bowl-halftime-show'
@@ -69,4 +71,4 @@ df_sorted = df.sort_values(by="total_trade_value", ascending=False)
 
 print(df_sorted.head())
 print(df_sorted.shape)
-df_sorted.to_csv("sb_performance_trades.csv", index=False)
+df_sorted.to_csv("us_strikes_iran_trades.csv", index=False)
