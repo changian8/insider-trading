@@ -11,28 +11,46 @@ unnamed_1 = "0x1caa6a7ad0c6916aef7b67946de2e57ad24846a0"
 nothingeverhappens911 = "0xa4eb52229991c074bc560f825bf2776d77acd010"
 
 #initializing empty lists to build dataframe of all users data
-names_list = [dicedicedice,neodbs,planktonbets,unnamed_1]
-sides = []
-sizes = []
-prices = []
-potential_winnings = []
-timestamps = []
-outcomes = []
-slugs = []
-condition_ids = []
-names = []
+names_list = [dicedicedice,neodbs,planktonbets,unnamed_1,nothingeverhappens911]
+proxyWallet = []
+side = []
+conditionId = []
+size = []
+price = []
+timestamp = []
+title = []
+slug = []
+eventSlug = []
+outcome = []
+outcomeIndex = []
+name = []
+total_trade_value = []
+winnings = []
+trade_used = []
+user_mean_winnings = []
+user_number_of_trades = []
+user_trades_before_this_trade = []
+user_trades_after_this_trade = []
+user_num_in_price_range = []
+trade_percentile_winnings_compared_to_user_history = []
 for item in names_list:
     user_info = paf.user_history(item)
-    sides.extend(user_info[0])
-    sizes.extend(user_info[1])
-    prices.extend(user_info[2])
-    potential_winnings.extend(user_info[3])
-    timestamps.extend(user_info[4])
-    outcomes.extend(user_info[5])
-    slugs.extend(user_info[6])
-    condition_ids.extend(user_info[7])
+    ttv = user_info[1]*user_info[2]
+    total_trade_value.extend(ttv)
+    side.extend(user_info[0])
+    size.extend(user_info[1])
+    price.extend(user_info[2])
+    winnings.extend(user_info[3])
+    timestamp.extend(user_info[4])
+    outcome.extend(user_info[5])
+    slug.extend(user_info[6])
+    conditionId.extend(user_info[7])
     this_name = [item] * len(user_info[0])
-    names.extend(this_name)
+    fillin = [True] * len(user_info[0])
+    mean_winnings = [np.mean(user_info[3])]
+    trade_used.extend(fillin)
+    proxyWallet.extend(this_name)
+    name.extend(this_name)
 
 user_data = [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids,names]
 users_zipped = list(zip(*user_data))

@@ -34,7 +34,8 @@ def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=N
     '''
     #create mask to filter for if a trade was included, and a potential winnings column in original trades_csv
     trade_mask = [False]*len(trades_csv)
-    trades_csv['winnings'] = trades_csv['size'] - trades_csv['total_trade_value']
+    
+    trades_csv['winnings'] = trades_csv['size'] - trades_csv['price']*trades_csv['size']
     #this will ensure that we efficiently get the biggest trades in the market
     sorted_trades = trades_csv.sort_values(by='winnings',ascending=False)
     #storing each users metrics to add to a df later
