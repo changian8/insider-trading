@@ -83,7 +83,7 @@ def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=N
         if (user_n_trades <= trades_cutoff) and (potential_winnings >= winnings_percentile):
             n_suspicious_trades += 1
         #we will stop when we get two suspicious trades or 25 total trades (to avoid too much data)
-        if n_suspicious_trades >= 2:
+        if n_suspicious_trades >= 10:
             break
         if n_trades >= 25:
             break
