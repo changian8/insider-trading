@@ -25,49 +25,80 @@ user_list_madurocapture =[]
 
 
 
-def trades_to_userhistory(trades_csv):
+def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=None, price_tails = 0.05):
     '''
     inputs: a csv of all the trades in the market (above a certain volume)
     cutoff: the percent of the max trade in the market it has to be to flag as suspicious (def could change this later)
     outputs: right now just prints the dataframes of all the trades that user has made, 
     return: indices of trades we're interested in (top 10 for each market?) and full csv of everything we're interested in
     '''
+    #create mask to filter for if a trade was included, and a potential winnings column in original trades_csv
+    trade_mask = [False]*len(trades_csv)
     trades_csv['winnings'] = trades_csv['size'] - trades_csv['total_trade_value']
+    #this will ensure that we efficiently get the biggest trades in the market
     sorted_trades = trades_csv.sort_values(by='winnings',ascending=False)
+    #storing each users metrics to add to a df later
+    user_mean_winnings = []
+    user_sum_trades = []
+    user_num_before = []
+    user_num_after = []
+    user_num_non_extreme_price = []
+    user_winnings_percentile = []
     index_used_trades = []
     user_list = []
     n_trades = 0
     n_suspicious_trades = 0
-    for index,row in trades_csv.iterrows():
+    for index,row in sorted_trades.iterrows():
         buy = row['side']
         user = row['proxyWallet']
-        timestamp = row['timestamp']
-        if (buy == 'BUY') and (user not in user_list):
+        potential_winnings = row['winnings']
+        price = row['price']
+        timestamp = row['timestamp'] #add implementation for filtering before/after a suspicous date later...
+        if (buy == 'BUY'):
             index_used_trades.append(index)
             user_list.append(user)
             n_trades += 1
+            trade_mask[index] = True
             user_info = paf.user_history(user)
             user_n_trades = len(user_info[0])
-            mean_winnings = np.mean(user_info[3])
-            # look through and count all trades before timestamp
-        # if trader has not traded a lot, has traded for generally a lot less, and wasn't very active before this trade:
-        # n_suspicious_trades += 1
+            avg_winnings = np.mean(user_info[3])
+            user_mean_winnings.append(avg_winnings)
+            user_sum_trades.append(user_n_trades)
+            n_before = 0
+            n_after = 0
+            n_in_price_range = 0
+            for index in range(user_n_trades):
+                if user_info[4][index] < timestamp:
+                    n_before += 1
+                if user_info[4][index] > timestamp:
+                    n_after += 1
+                if (user_info[2][index] > price_tails) and (user_info[2][index] < 1-price_tails):
+                    n_in_price_range += 1
+            user_num_before.append(n_before)
+            user_num_after.append(n_after)
+            user_num_non_extreme_price.append(n_in_price_range)
+            winnings_percentile = np.percentile(user_info[3],percentile)
+            user_winnings_percentile.append(winnings_percentile)
+        # if trader has not traded a lot and has traded for generally less, flag as a suspicious trade, and the price is pretty normal
+        if (user_n_trades <= trades_cutoff) and (potential_winnings >= winnings_percentile) and (price < 0.85) and (price > 0.15):
+            n_suspicious_trades += 1
+        #we will stop when we get two suspicious trades or 25 total trades (to avoid too much data)
         if n_suspicious_trades >= 2:
             break
-    
-    # metrics: number of other trades, 
-    # size of other trades relative to other trades (a few ways to do this), 
-    # trades before and after this trade
-    # winningness in other trades? that are closed
-    for user in user_list:
-        user_info = paf.user_history(user)
-        users_zipped = list(zip(*user_info))
-        user_df = pd.DataFrame(users_zipped)
-        user_df.columns = ['sides','sizes','prices','potential_winnings','timestamps','outcomes','slugs','condition_ids']
-        print(np.shape(user_df))
-        print(user_df)
+        if n_trades >= 25:
+            break
+    trades_csv['trade_used'] = trade_mask
+    trades_filtered = trades_csv[trades_csv['trade_used']==True].copy()
+    trades_filtered['user_mean_winnings'] = user_mean_winnings
+    trades_filtered['user_number_of_trades'] = user_sum_trades
+    trades_filtered['user_trades_before_this_trade'] = user_num_before
+    trades_filtered['user_trades_after_this_trade'] = user_num_after
+    trades_filtered['user_num_in_price_range'] = user_num_non_extreme_price
+    trades_filtered['trade_percentile_winnings_compared_to_user_history'] = user_winnings_percentile
     print("complete")
-    return index_used_trades, user_list
+    # what we need to do: put the trades data AND the important user info into a dataframe, 
+    # for each market we will produce one and then join them ?
+    return trades_filtered
 
 
 def plot_price_history(trades_csv):
@@ -88,9 +119,20 @@ def plot_price_history(trades_csv):
     plt.show()
     return None
 
-index_trades, user_list = trades_to_userhistory(halftime)
-print(index_trades)
-print(user_list)
+halftime_full_df = trades_to_userhistory(halftime)
+iran_full_df = trades_to_userhistory(iran_strike)
+maduro_full_df = trades_to_userhistory(maduro)
+
+print(np.shape(halftime_full_df))
+print(np.shape(iran_full_df))
+print(np.shape(maduro_full_df))
+full_df = pd.concat([halftime_full_df,iran_full_df,maduro_full_df],ignore_index=True)
+print(np.shape(full_df))
+print(full_df)
+full_df.to_csv('trades_for_website.csv',index=False)
+
+
+
 
 
     
