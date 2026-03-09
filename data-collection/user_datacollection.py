@@ -25,7 +25,7 @@ user_list_madurocapture =[]
 
 
 
-def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=None, price_tails = 0.05):
+def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=None, price_max = 0.85, price_min = 0):
     '''
     inputs: a csv of all the trades in the market (above a certain volume)
     cutoff: the percent of the max trade in the market it has to be to flag as suspicious (def could change this later)
@@ -54,7 +54,7 @@ def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=N
         potential_winnings = row['winnings']
         price = row['price']
         timestamp = row['timestamp'] #add implementation for filtering before/after a suspicous date later...
-        if (buy == 'BUY'):
+        if (buy == 'BUY') and (price < price_max) and (price > price_min):
             index_used_trades.append(index)
             user_list.append(user)
             n_trades += 1
@@ -72,7 +72,7 @@ def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=N
                     n_before += 1
                 if user_info[4][index] > timestamp:
                     n_after += 1
-                if (user_info[2][index] > price_tails) and (user_info[2][index] < 1-price_tails):
+                if (user_info[2][index] > price_min) and (user_info[2][index] < price_max):
                     n_in_price_range += 1
             user_num_before.append(n_before)
             user_num_after.append(n_after)
@@ -80,7 +80,7 @@ def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=N
             winnings_percentile = np.percentile(user_info[3],percentile)
             user_winnings_percentile.append(winnings_percentile)
         # if trader has not traded a lot and has traded for generally less, flag as a suspicious trade, and the price is pretty normal
-        if (user_n_trades <= trades_cutoff) and (potential_winnings >= winnings_percentile) and (price < 0.85) and (price > 0.15):
+        if (user_n_trades <= trades_cutoff) and (potential_winnings >= winnings_percentile):
             n_suspicious_trades += 1
         #we will stop when we get two suspicious trades or 25 total trades (to avoid too much data)
         if n_suspicious_trades >= 2:
