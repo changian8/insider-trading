@@ -1,0 +1,14 @@
+{
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "eslint": "^10.0.3",
+    "eslint-plugin-jsdoc": "^62.7.1",
+    "globals": "^17.4.0",
+    "jest": "^30.3.0"
+  }, 
+  "scripts": {
+    "lint": "eslint .",
+    "test": "jest"
+  }
+}
