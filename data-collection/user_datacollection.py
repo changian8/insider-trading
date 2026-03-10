@@ -24,14 +24,13 @@ user_list_iranstrike = []
 user_list_madurocapture =[]
 
 
-
+'''
 def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=None, price_max = 0.85, price_min = 0):
-    '''
+    docstring: (comment out)
     inputs: a csv of all the trades in the market (above a certain volume)
     cutoff: the percent of the max trade in the market it has to be to flag as suspicious (def could change this later)
     outputs: right now just prints the dataframes of all the trades that user has made, 
     return: indices of trades we're interested in (top 10 for each market?) and full csv of everything we're interested in
-    '''
     #create mask to filter for if a trade was included, and a potential winnings column in original trades_csv
     trade_mask = [False]*len(trades_csv)
     
@@ -119,10 +118,11 @@ def plot_price_history(trades_csv):
     plt.plot(timestamp_list,prices_updated)
     plt.show()
     return None
+'''
 
-halftime_full_df = trades_to_userhistory(halftime)
-iran_full_df = trades_to_userhistory(iran_strike)
-maduro_full_df = trades_to_userhistory(maduro)
+halftime_full_df = paf.trades_to_userhistory(halftime)
+iran_full_df = paf.trades_to_userhistory(iran_strike)
+maduro_full_df = paf.trades_to_userhistory(maduro)
 
 print(np.shape(halftime_full_df))
 print(np.shape(iran_full_df))
