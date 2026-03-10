@@ -30,6 +30,8 @@ print(np.shape(maduro_full_df))
 full_df = pd.concat([halftime_full_df,iran_full_df,maduro_full_df],ignore_index=True)
 print(np.shape(full_df))
 print(full_df)
+scores = paf.analyze_history(full_df)
+full_df['Insider_scores'] = scores
 full_df.to_csv('trades_for_website.csv',index=False)
 
 

@@ -132,7 +132,7 @@ def user_history(user_id,limit=1000):
     return [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids]
 
 
-def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=None, price_max=0.85, price_min=0, max_trades=25):
+def trades_to_userhistory(trades_csv, trades_cutoff=5, sus_date=None, price_max=0.85, price_min=0, max_trades=25):
     '''
     inputs: trades_csv: a csv of all the trades in the market (above a certain volume)
     trades_cutoff: the number of trades needed to consider a user as insider trading (the fewer trades the more suspicious)
@@ -183,7 +183,7 @@ def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=N
                     n_after += 1
             user_num_before.append(n_before)
             user_num_after.append(n_after)
-            winnings_percentile = np.percentile(user_info[3],percentile)
+            winnings_percentile = np.percentile(user_info[3],90)
             user_winnings_percentile.append(winnings_percentile)
         # we will stop at a certain point to avoid too much data
         if n_trades >= max_trades:
@@ -194,7 +194,7 @@ def trades_to_userhistory(trades_csv, trades_cutoff=5, percentile=90, sus_date=N
     trades_filtered['user_number_of_trades'] = user_sum_trades
     trades_filtered['user_trades_before_this_trade'] = user_num_before
     trades_filtered['user_trades_after_this_trade'] = user_num_after
-    trades_filtered['trade_percentile_winnings_compared_to_user_history'] = user_winnings_percentile
+    trades_filtered[f'user_90th_percentile_winnings'] = user_winnings_percentile
     trades_filtered.drop('trade_used', axis=1, inplace=True)
     print("complete")
     return trades_filtered
@@ -228,3 +228,29 @@ def analyze_history(final_trades_csv):
     Iterates through the final trades csv and returns a list of 1-10 scores of how likely we think the trade is an insider trade
     after running this function we could add it as a column to our final dataframe?
     '''
+    # logic for adding to insider score: 
+    insider_scores = []
+    for index, row in final_trades_csv.iterrows():
+        insider_score = 'Low Risk'
+        user_trades = row['user_number_of_trades']
+        percentile = row['user_90th_percentile_winnings']
+        potential_winnings = row['winnings']
+        mean = row['user_mean_winnings']
+        if user_trades <= 20:
+            if potential_winnings >= percentile:
+                insider_score = 'High Risk'
+            if (potential_winnings < percentile) and (potential_winnings > mean):
+                insider_score = 'Medium Risk'
+        if (user_trades > 20) and (user_trades <= 50):
+            if potential_winnings >= percentile:
+                insider_score = 'High Risk'
+            if (potential_winnings < percentile) and (potential_winnings > mean):
+                insider_score = 'Medium Risk'
+        if (user_trades > 50) and (user_trades <= 200):
+            if potential_winnings >= percentile:
+                insider_score = 'Medium Risk'
+        insider_scores.append(insider_score)
+    return insider_scores
+
+            
+        
