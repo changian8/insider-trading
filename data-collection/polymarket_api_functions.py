@@ -39,64 +39,38 @@ def price_at_time(clob,time,interval = 172800):
     return history_json['history']
 
 
-# getting the trades - BECOMES REDUNDANT WITH IAN'S WORK
-def get_trades(cond_id, min_size,limit=1000):
-    '''
-    Perform the API query to get suspicious trades. Designed to filter as much as possible in the query.
-    This should be combined with previous work
-    cond_id: the market
-    min_size: the minimum size of the trade in USD
-    limit: the max number of trades to fetch
-    '''
-    url = f"https://data-api.polymarket.com/trades?limit={limit}&takerOnly=true&market={cond_id}&filterType=CASH&side=BUY&filterAmount={min_size}"
-    trades = requests.get(url)
-    trades_json = trades.json()
-    num_trades = len(trades_json)
-    time.sleep(1)
-    if num_trades == limit:
-        #could either increase limit or increase min size
-        new_url = f"https://data-api.polymarket.com/trades?limit={limit}&takerOnly=true&market={cond_id}&filterType=CASH&side=BUY&filterAmount={min_size*1.5}"
-        trades = requests.get(new_url)
-        trades_json = trades.json()
-    return trades_json
-    # I'm going to leave filtering the price range for later on when we iterate through the list 
-    # If it seems like this is a problem (way too many trades at a super high price) I will come back to this later.
+def get_trades(event_slug, limit=1000):
+    """
+    This function returns the latest 100 trades for a given event slug.
+    Using the event slug it finds the condition ID then uses that to get all trades in that market
+    The metadata returned includes user info, price, and timestamp 
+    """
+    event_url = f"https://gamma-api.polymarket.com/events/slug/{event_slug}"
 
+    response = requests.get(event_url)
 
-# taking the trades we got that are a certain size and filtering them down to what is actually interesting
-# May be made redundant with Ian's code
-def filter_trades(trades_json,winnings_cutoff,timestamp):
-    '''
-    This function filters the flagged high volume trades beyond what we can do in the API query
-    If we think of more criteria to filter by that are not available in query add them here
-    trades_json: takes a json of trades (should be filtered to exclude small trades and potentially by date of trade as well)
-    winnings_cutoff: the minimum amount the user stands to win that we consider suspicious
-    timestamp: the timestamp cutoff (no trades after a certain date)
-    return: a list of features for each trade, price, size, timestamp, user, outcome, probably will need more later
-    '''
-    sizes = []
-    prices = []
-    timestamps = []
-    outcomes = []
-    users = []
-    num_flagged = 0
-    for i in range(len(trades_json)):
-        trade_info = trades_json[i]
-        trade_size = trade_info['size']
-        trade_price = trade_info['price']
-        trade_timestamp = trade_info['timestamp']
-        trade_outcome = trade_info['outcome']
-        trade_user = trade_info['proxyWallet']
-        winnings = trade_size - trade_size*trade_price
-        if (winnings > winnings_cutoff) and (trade_timestamp < timestamp):
-            sizes.append(trade_size)
-            prices.append(trade_price)
-            timestamps.append(trade_timestamp)
-            outcomes.append(trade_outcome)
-            users.append(trade_user)
-            num_flagged += 1
-    print(f"Number of flagged trades: {num_flagged}")
-    return [sizes, prices, timestamps, outcomes, users]
+    data = json.loads(response.text)
+
+    #first_market = data["markets"][0]
+
+    # first_market = next(
+    #     m for m in data["markets"]
+    #     if m.get("slug") == 'will-lady-gaga-perform-during-the-super-bowl-lx-halftime-show'
+    # )
+
+    #cID = first_market['conditionId']
+
+    cID = '0x3488f31e6449f9803f99a8b5dd232c7ad883637f1c86e6953305a2ef19c77f20'
+
+    trades_url = f"https://data-api.polymarket.com/trades?limit={limit}&takerOnly=true&market={cID}&filterType=CASH&filterAmount=50"
+
+    trades_response = requests.get(trades_url)
+
+    json_trades = trades_response.json()
+
+    prettify = json.dumps(json_trades, indent=2)
+
+    return(json_trades)
 
 
 def user_history(user_id,limit=1000):
@@ -105,16 +79,14 @@ def user_history(user_id,limit=1000):
     limit: number of trades returned in one use of the API (max is 1000, which is the default) 
     Returns a list of lists with information about each trade that user has made
     lists: side of the trade they are on, the size of the trade, 
-    the price, the timestamp, the outcome they are betting on, 
-    the slug and the condition ID of the trade 
+        the price, the timestamp, the outcome they are betting on, 
+        the slug and the condition ID of the trade 
     '''
-    #first part is fetching the most recent 1000 trades that the user has made and storing them in a json
+
     user_url = f"https://data-api.polymarket.com/trades?user={user_id}&limit={limit}"
     user_trades = requests.get(user_url)
     user_trades_json = user_trades.json()
-    
-    #this will allow us to easily expand past the limit of 1000 trades 
-    #and ensures that we don't store useless info like the users profile picture
+    # setting up lists so that we can store data from multiple queries if the user has traded more than the limit
     sides = []
     sizes = []
     prices = []
@@ -135,7 +107,6 @@ def user_history(user_id,limit=1000):
         condition_ids.append(item['conditionId'])
     prev_length = len(user_trades_json)
     offset = limit
-    #idk how much we need this but probably best practice to have a little sleep
     time.sleep(5)
     while prev_length == limit:
         print("user has traded more than limit")
@@ -144,7 +115,10 @@ def user_history(user_id,limit=1000):
         new_json = new_trades.json()
         for new_item in new_json:
             if new_item == 'error':
-                #I think this is just running into API rate limits because I only had problems when I was past 4000 trades fetched
+                # this is a corner case that comes up only if the user has traded a lot, 
+                # which suggests two things: 
+                # 1: we probably are running into an API limit 
+                # 2: they probably aren't an insider trader
                 continue
             sides.append(new_item['side'])
             sizes.append(new_item['size'])
@@ -158,144 +132,125 @@ def user_history(user_id,limit=1000):
     return [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids]
 
 
-def trades_plot(size_list):
+def trades_to_userhistory(trades_csv, trades_cutoff=5, sus_date=None, price_max=0.85, price_min=0, max_trades=25):
     '''
-    Takes a Json which contains all the trades a user has made
-    Plots a histogram of the sizes of the trades they have made
-    And returns a numerical summary of the sizes
+    inputs: trades_csv: a csv of all the trades in the market (above a certain volume)
+    trades_cutoff: the number of trades needed to consider a user as insider trading (the fewer trades the more suspicious)
+    percentile: the percentile of potential winnings a trade needs to be to be flagged as potentially insider trading
+    sus_date: TBD
+    price_max: the maximum price for us to consider a trade 
+        (a high price suggests less risk which makes insider trading less likely)
+    priec_min: the minimum price for us to consider a trade 
+        (default is zero because insider trading seems plausible on a very low probability event)
+    cutoff: the percent of the max trade in the market it has to be to flag as suspicious (def could change this later)
+    return: a dataframe which contains the information from get_trades about each trade as well as information about the user's trading history
+        added columns are: mean potential winnings, total number of trades, number of trades before the flagged trade, 
+        number of trades after the flagged trade, and the percentile of the potential winnings as compared to the other trades
     '''
-    plt.hist(size_list)
+    # creating a mask to filter for if a trade was included, so we can easily trim the dataframe later
+    trade_mask = [False]*len(trades_csv)
+    trades_csv['winnings'] = trades_csv['size'] - trades_csv['price']*trades_csv['size']
+    sorted_trades = trades_csv.sort_values(by='winnings',ascending=False)
+    user_mean_winnings = []
+    user_sum_trades = []
+    user_num_before = []
+    user_num_after = []
+    user_winnings_percentile = []
+    index_used_trades = []
+    user_list = []
+    n_trades = 0
+    for index,row in sorted_trades.iterrows():
+        buy = row['side']
+        user = row['proxyWallet']
+        price = row['price']
+        timestamp = row['timestamp'] #add implementation for filtering before/after a suspicous date later...
+        if (buy == 'BUY') and (price < price_max) and (price > price_min):
+            index_used_trades.append(index)
+            user_list.append(user)
+            n_trades += 1
+            trade_mask[index] = True
+            user_info = user_history(user)
+            user_n_trades = len(user_info[0])
+            avg_winnings = np.mean(user_info[3])
+            user_mean_winnings.append(avg_winnings)
+            user_sum_trades.append(user_n_trades)
+            n_before = 0
+            n_after = 0
+            for index in range(user_n_trades):
+                if user_info[4][index] < timestamp:
+                    n_before += 1
+                if user_info[4][index] > timestamp:
+                    n_after += 1
+            user_num_before.append(n_before)
+            user_num_after.append(n_after)
+            winnings_percentile = np.percentile(user_info[3],90)
+            user_winnings_percentile.append(winnings_percentile)
+        # we will stop at a certain point to avoid too much data
+        if n_trades >= max_trades:
+            break
+    trades_csv['trade_used'] = trade_mask
+    trades_filtered = trades_csv[trades_csv['trade_used']==True].copy()
+    trades_filtered['user_mean_winnings'] = user_mean_winnings
+    trades_filtered['user_number_of_trades'] = user_sum_trades
+    trades_filtered['user_trades_before_this_trade'] = user_num_before
+    trades_filtered['user_trades_after_this_trade'] = user_num_after
+    trades_filtered[f'user_90th_percentile_winnings'] = user_winnings_percentile
+    trades_filtered.drop('trade_used', axis=1, inplace=True)
+    print("complete")
+    return trades_filtered
+
+def plot_price_history(trades_csv):
+    '''
+    Takes a csv of all the trades in the market and plots the price over time as a lineplot
+    parameters: trades_csv: a csv retrieved from get_trades with information on every trade in a market
+    returns: none (plots a line plot using matplotlib)
+    '''
+    prices_updated = []
+    sorted_trades = trades_csv.sort_values(by='timestamp')
+    timestamp_list =[]
+    for index,row in sorted_trades.iterrows():
+        print(row)
+        timestamp = row['timestamp']
+        dt_object = datetime.fromtimestamp(timestamp)
+        timestamp_list.append(dt_object)
+        price = row['price']
+        if row['outcome'] == 'No':
+            price  = 1-price
+        prices_updated.append(price)
+    plt.figure(1)
+    plt.plot(timestamp_list,prices_updated)
     plt.show()
-    num_trades = len(size_list)
-    size_sd = np.std(size_list)
-    quartiles = np.quantile(size_list, [0.25,0.5,0.75])
-    dictionary = {'number of trades':num_trades, "quartiles": quartiles, "standard deviation":size_sd}
-    return dictionary
+    return None
 
 
-def analyze_history(user_history_data,sus_trade):
+def analyze_history(final_trades_csv):
     '''
-    Takes information about a user's history and returns a set of metrics to evaluate how suspicious the trade they made is relative to their behavior
-    user_history_data: the user history data from the user_history function
-    sus_trade: info on the suspicious trade, in list form from filter_trades
-    Returns: list of metrics:
-    how big it was relative to other trades (percentile?) - uses sizes
-    how much money do they stand to win (percentile?)- combo of price and size
-    how early it was relative to other trades (percentile?) could also return date? - uses prices
-    did they buy? - sides
-    is there any pattern to prices that this trade doesn't follow? - outcomes/sides?
-    ie: important general info is how often they buy/sell, how often they trade, average and sd of trades
-    could also then go back and take these relative to their markets? too much API use? - uses slug/condid
-    also difference in timestamps could be good... something is more suspicious if it happens right before cutoff date?
+    Iterates through the final trades csv and returns a list of 1-10 scores of how likely we think the trade is an insider trade
+    after running this function we could add it as a column to our final dataframe?
     '''
-    #should we define these metrics relative to the market?
-    #probably best to have our boundaries definable as parameters
-    trade_size = sus_trade[0]
-    trade_price = sus_trade[1]
-    trade_winnings = (1/trade_price)*trade_size
-    trade_date = sus_trade[2]
-    num_trades = len(user_history_data[0])
-    winnings_greater = 0
-    date_earlier = 0
-    for i in range(num_trades):
-        if user_history_data[3][i] > trade_winnings:
-            winnings_greater += 1
-        if user_history_data[4][i] < trade_date:
-            date_earlier += 1
-    print(f"sus trades potential winnings: {trade_winnings}")
-    print(f"number of trades with more potential winnings: {winnings_greater}")
-    print(f"date of the sus trade: {trade_date}")
-    print(f"number of trades earlier than sus date: {date_earlier}")
-
-'''
-#basic set up stuff
-
-jan_thirty_unix = date_to_unix("01/30/2026")
-jan_thirtyone_unix = date_to_unix("01/31/2026")
-jan_third_unix = date_to_unix("01/03/2026")
-invasion_time = jan_thirty_unix + 21600
-
-
-maduro_filter_url = f"https://gamma-api.polymarket.com/markets?order=id&ascending=false&closed=true&limit=200&end_date_min={jan_thirty_unix}&end_date_max={jan_thirtyone_unix}&volume_num_min=11000000&volume_num_max=11100000"
-maduro_response = requests.get(maduro_filter_url)
-maduro_info = maduro_response.json()
-maduro_cond_id = maduro_info[0]['conditionId']
-print(json.dumps(maduro_info,indent=2))
-print(maduro_cond_id)
-
-
-
-
-# getting all trades on the maduro bet that have size more than 500 
-# (this is a bit imperfect but based on this I don't think we'll run into API limits)
-sus_trades = get_trades(maduro_cond_id, 500)
-print(len(sus_trades))
-
-# this filters based on the expected payout: 
-# we're really probably more interested in expected profit than size because it's interepretation is so dependent on price
-num_actually_sus = 0
-sus_traders = []
-# we can see that most of the trades we classify as 'sus' trades here are actually after the invasion and realtively cheap
-# this def means we need to filter for date in a different function
-# I don't love flag_users because we also need the trade info, so I think I will make a new function for that 
-
-actually_sus = filter_trades(sus_trades, 5000, invasion_time)
-for item in actually_sus:
-    sus_history = user_history(item[4]) 
-    analyze_history(sus_history,item)
-    
-'''
-
-# IRAN INSIDER TRADERS
-
-#users were linked in the tweet 
-
-import pandas as pd
-dicedicedice = "0xdde15ebd95330ce69136dc0ccd810d22382e02c5"
-neodbs = "0x56efadc9defe5b7a21af751e0d026f2cf54136db"
-planktonbets = "0x38745db27f7360a287f6ca3c9b6a6a9c76149801"
-unnamed_1 = "0x1caa6a7ad0c6916aef7b67946de2e57ad24846a0"
-nothingeverhappens911 = "0xa4eb52229991c074bc560f825bf2776d77acd010"
-
-#initializing empty lists to build dataframe of all users data
-names_list = [dicedicedice,neodbs,planktonbets,unnamed_1]
-sides = []
-sizes = []
-prices = []
-potential_winnings = []
-timestamps = []
-outcomes = []
-slugs = []
-condition_ids = []
-names = []
-for item in names_list:
-    user_info = user_history(item)
-    sides.extend(user_info[0])
-    sizes.extend(user_info[1])
-    prices.extend(user_info[2])
-    potential_winnings.extend(user_info[3])
-    timestamps.extend(user_info[4])
-    outcomes.extend(user_info[5])
-    slugs.extend(user_info[6])
-    condition_ids.extend(user_info[7])
-    this_name = [item] * len(user_info[0])
-    names.extend(this_name)
-
-user_data = [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids,names]
-users_zipped = list(zip(*user_data))
-user_df = pd.DataFrame(users_zipped)
-user_df.columns = ['sides','sizes','prices','potential_winnings','timestamps','outcomes','slugs','condition_ids','names']
-print(np.shape(user_df))
-print(user_df.head())
-user_df.to_csv('Iran_insider_traders_trades_info.csv',index=False)
-
+    # logic for adding to insider score: 
+    insider_scores = []
+    for index, row in final_trades_csv.iterrows():
+        insider_score = 'Low Risk'
+        user_trades = row['user_number_of_trades']
+        percentile = row['user_90th_percentile_winnings']
+        potential_winnings = row['winnings']
+        mean = row['user_mean_winnings']
+        if user_trades <= 20:
+            if potential_winnings >= percentile:
+                insider_score = 'High Risk'
+            if (potential_winnings < percentile) and (potential_winnings > mean):
+                insider_score = 'Medium Risk'
+        if (user_trades > 20) and (user_trades <= 50):
+            if potential_winnings >= percentile:
+                insider_score = 'High Risk'
+            if (potential_winnings < percentile) and (potential_winnings > mean):
+                insider_score = 'Medium Risk'
+        if (user_trades > 50) and (user_trades <= 200):
+            if potential_winnings >= percentile:
+                insider_score = 'Medium Risk'
+        insider_scores.append(insider_score)
+    return insider_scores
 
             
-
-
-
-
-
-
-
-    
+        
