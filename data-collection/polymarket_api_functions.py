@@ -24,55 +24,6 @@ def unix_to_date(unix):
     return mdy
 
 
-# Price History
-def price_at_time(clob,time,interval = 172800):
-    '''
-    clob: the market clob
-    time: time we are interested in flagging 
-    interval: the interval we are interested - distance in both directions from time
-    returns the price history over a specified interval around a time of interest
-    '''
-    startt = time - interval
-    history_url = f"https://clob.polymarket.com/prices-history?market={clob}&startTs={startt}"
-    history = requests.get(history_url)
-    history_json = history.json()
-    return history_json['history']
-
-
-def get_trades(event_slug, limit=1000):
-    """
-    This function returns the latest 100 trades for a given event slug.
-    Using the event slug it finds the condition ID then uses that to get all trades in that market
-    The metadata returned includes user info, price, and timestamp 
-    """
-    event_url = f"https://gamma-api.polymarket.com/events/slug/{event_slug}"
-
-    response = requests.get(event_url)
-
-    data = json.loads(response.text)
-
-    #first_market = data["markets"][0]
-
-    # first_market = next(
-    #     m for m in data["markets"]
-    #     if m.get("slug") == 'will-lady-gaga-perform-during-the-super-bowl-lx-halftime-show'
-    # )
-
-    #cID = first_market['conditionId']
-
-    cID = '0x3488f31e6449f9803f99a8b5dd232c7ad883637f1c86e6953305a2ef19c77f20'
-
-    trades_url = f"https://data-api.polymarket.com/trades?limit={limit}&takerOnly=true&market={cID}&filterType=CASH&filterAmount=50"
-
-    trades_response = requests.get(trades_url)
-
-    json_trades = trades_response.json()
-
-    prettify = json.dumps(json_trades, indent=2)
-
-    return(json_trades)
-
-
 def user_history(user_id,limit=1000):
     '''
     user_id: proxywallet hex code, which is unique to a user
@@ -231,6 +182,8 @@ def analyze_history(final_trades_csv):
     after running this function we could add it as a column to our final dataframe?
     '''
     # logic for adding to insider score: 
+    # add number of trades before this one and number after to n_trades filtering
+    # add 90th percentile volume to percentile
     insider_scores = []
     for index, row in final_trades_csv.iterrows():
         insider_score = 'Low Risk'
