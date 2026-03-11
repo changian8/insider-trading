@@ -199,7 +199,7 @@ def trades_to_userhistory(trades_csv, trades_cutoff=5, sus_date=None, price_max=
     print("complete")
     return trades_filtered
 
-def plot_price_history(trades_csv):
+def plot_price_history(trades_csv,market_name):
     '''
     Takes a csv of all the trades in the market and plots the price over time as a lineplot
     parameters: trades_csv: a csv retrieved from get_trades with information on every trade in a market
@@ -209,7 +209,6 @@ def plot_price_history(trades_csv):
     sorted_trades = trades_csv.sort_values(by='timestamp')
     timestamp_list =[]
     for index,row in sorted_trades.iterrows():
-        print(row)
         timestamp = row['timestamp']
         dt_object = datetime.fromtimestamp(timestamp)
         timestamp_list.append(dt_object)
@@ -218,6 +217,9 @@ def plot_price_history(trades_csv):
             price  = 1-price
         prices_updated.append(price)
     plt.figure(1)
+    plt.xlabel("Price")
+    plt.ylabel("Date")
+    plt.title(f"Price History For {market_name}")
     plt.plot(timestamp_list,prices_updated)
     plt.show()
     return None
