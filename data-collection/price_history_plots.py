@@ -1,5 +1,8 @@
-import polymarket_api_functions as paf
+'''
+A file for getting the price history plots for each of our markets
+'''
 import pandas as pd
+import polymarket_api_functions as paf
 
 halftime = pd.read_csv("data-collection/sb_performance_trades.csv")
 iran_strike = pd.read_csv("data-collection/us_strikes_iran_trades.csv")
