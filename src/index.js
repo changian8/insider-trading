@@ -13,7 +13,9 @@ const MAXIMUM_ROWS_TO_DISPLAY = 8
 const FIRST_CATEGORY = 'Geopolitics'
 
 /**
- * Sorts the CSV rows based on the last item in each row (assumed to be a numeric value)
+ * Sorts the CSV rows based on the last item in each row, in ascending order
+ * This is used to sort the trades by their insider trading suspicion index,
+ *  which is assumed to be the last column in the CSV file
  * 
  * @param {string[]} rows - The CSV rows to sort
  * @returns {string[]} - The sorted CSV rows
@@ -27,10 +29,10 @@ const sortCsvByLastItem = function (rows) {
 }
 
 /**
- * Gets the index of the category column in the CSV file based on the header name
+ * Gets the index of the category column in the CSV file based on the header
  * 
- * @param {string[]} headers 
- * @returns 
+ * @param {string[]} headers - The first row of the CSV file, split by comma
+ * @returns {number} - The index of the category column, or -1 if not found
  */
 const getCategoryColumnIndex = function (headers) {
   for (let i = 0; i < headers.length; i++) {
@@ -43,25 +45,26 @@ const getCategoryColumnIndex = function (headers) {
 }
 
 /**
- * Checks if a row does not belong to the specified category
+ * Checks if a row belongs to the specified category
+ * Used to filter the rows so that only rows of the selected category are displayed
  * 
  * @param {string} row - The CSV row to check
  * @param {string} trueCategoryName - The category name to compare against
  * @param {number} categoryColumnIndex - The index of the category column in the CSV row
- * @returns {boolean} - True if the row does not belong to the specified category, false otherwise
+ * @returns {boolean} - True if the row belongs to the specified category, false otherwise
  */
-const rowNotInCategory = function (row, trueCategoryName, categoryColumnIndex) {
+const isRowInCategory = function (row, trueCategoryName, categoryColumnIndex) {
   const rowAsList = row.split(',')
   const actualCategoryName = rowAsList[categoryColumnIndex]
   if (actualCategoryName.trim() == trueCategoryName.trim()) {
-    return false
+    return true
   }
-  return true
+  return false
 }
 
 /** 
  * This function clears the table of all data
- * we need this when we want to load a new category of data after a button click
+ * We need this when we want to load a new category of data after a button click
  * 
  * @params none 
  * @returns none
@@ -78,9 +81,10 @@ const clearDataTable = function () {
 }
 
 /**
- * This function takes in the CSV text and a category filter, and populates the HTML table with the relevant data
+ * Takes the raw CSV text and displays it in the table on the webpage
+ * filtering the data as to only show a specified category
  * 
- * @param {string} csvText - The CSV text to parse and display
+ * @param {string} csvText - The raw text of the CSV file
  * @param {string} categoryFilter - The category to filter the rows by
  */
 const putDataInTable = function (csvText, categoryFilter) {
@@ -108,7 +112,7 @@ const putDataInTable = function (csvText, categoryFilter) {
     if (rowsDisplayed == MAXIMUM_ROWS_TO_DISPLAY) {
       break
     }
-    if (rowNotInCategory(sortedRows[i], categoryFilter, categoryColumnIndex)) {
+    if (!isRowInCategory(sortedRows[i], categoryFilter, categoryColumnIndex)) {
       continue
     }
     rowsDisplayed++
@@ -126,7 +130,8 @@ const putDataInTable = function (csvText, categoryFilter) {
 }
 
 /**
- * This function loads the data from the CSV file and filters it by the specified category
+ * This function loads the data from the CSV file located in the repository 
+ * and filters it by the specified category
  * 
  * @param {string} categoryFilter - The category to filter the rows by
  */
@@ -158,3 +163,12 @@ filterButtons.forEach((button) => {
     loadData(filter)
   })
 })
+
+module.exports = {
+  sortCsvByLastItem,
+  isRowInCategory,
+  clearDataTable,
+  putDataInTable,
+  loadData,
+  DATABASE_NAME,
+}
