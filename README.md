@@ -35,8 +35,34 @@ that there exist identifiable features that we can use to identify them.
 [polymarket API](https://docs.polymarket.com/developers/CLOB/timeseries)
 
 [Unofficial Google Trends API](https://github.com/GeneralMills/pytrends), 
-which worked when I used it in August 2025 so I hope it still works now
+~~which worked when I used it in August 2025 so I hope it still works now~~
+which works as of deployment (3/12/2026); if it ceases to work, we discussed other
+alternatives in our [tech review](docs\technology-review\technology_review.md).
 
-second data source is still up for air, and if that API doesn't work 
-we can potentially use [Reddit](https://www.reddit.com/dev/api/) for this goal
+## Running Our Code
+
+### Backend (Python)
+
+### Frontend (HTML/JSS/CS)
+The frontend itself has no dependancies, however there are dev dependancies if you wanted to
+run either the linter (eslint) or the testing (jest).
+
+In order to install the dependances, tun the following:
+
+'''
+cd src 
+npm install
+'''
+
+and then 
+'''
+npm lint
+'''
+
+to run the linter and/or 
+
+'''
+npm test
+'''
+to run the tests.  
 
