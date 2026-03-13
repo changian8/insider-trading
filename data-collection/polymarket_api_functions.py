@@ -170,7 +170,7 @@ def plot_price_history(trades_csv,market_name):
     prices_updated = []
     sorted_trades = trades_csv.sort_values(by='timestamp')
     timestamp_list =[]
-    for row in sorted_trades.itertuples():
+    for index,row in sorted_trades.iterrows():
         timestamp = row['timestamp']
         dt_object = datetime.fromtimestamp(timestamp)
         timestamp_list.append(dt_object)
@@ -178,7 +178,8 @@ def plot_price_history(trades_csv,market_name):
         if row['outcome'] == 'No':
             price  = 1-price
         prices_updated.append(price)
-    plt.figure(1)
+    fig = plt.figure(1)
+    fig.set_facecolor('#ffebcd')
     plt.xlabel("Price of yes")
     plt.ylabel("Date")
     plt.title(f"Price History For {market_name}")
