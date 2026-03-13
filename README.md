@@ -49,20 +49,20 @@ run either the linter (eslint) or the testing (jest).
 
 In order to install the dependances, tun the following:
 
-'''
+```
 cd src 
 npm install
-'''
+```
 
 and then 
-'''
+```
 npm lint
-'''
+```
 
 to run the linter and/or 
 
-'''
+```
 npm test
-'''
-to run the tests.  
+```
 
+to run the tests.  
