@@ -1,66 +1,19 @@
-const CSV_HEADERS_TO_PAGE_HEADERS = {
-  account_creation_date: 'Account Creation Date',
-  wager_date: 'Wager Date',
-  wager_amount: 'Wager Amount',
-  total_bets_made_before_wager: 'Total Bets Made Before Wager',
-  total_categories_bet_on_before_wager: 'Total Categories Bet On Before Wager',
-  wager_outcome: 'Wager Outcome',
-  insider_trading_suspicion: 'Insider Trading Suspicion Index',
-  wager_category: 'Category',
+const JSON_HEADERS_TO_PAGE_HEADERS = {
+  title: 'Event Name', 
+  total_trade_value: 'Total Trade Value',
+  winnings: 'Winnings',
+  user_mean_winnings: 'User Mean Winnings',
+  user_number_of_trades: 'User Number of Trades',
+  user_trades_before_this_trade: 'User Trades Before This Trade',
+  user_trades_after_this_trade: 'User Trades After This Trade',
+  user_90th_percentile_winnings: 'User 90th Percentile Winnings',
+  Insider_scores: 'Insider Scores',
 }
-const DATABASE_NAME = 'FAKE_DATA.csv'
+
+const isDollarValueCategory = ['total_trade_value', 'winnings', 'user_mean_winnings', 'user_90th_percentile_winnings']
+const DATABASE_NAME = 'trades_for_website.json'
 const MAXIMUM_ROWS_TO_DISPLAY = 8
-const FIRST_CATEGORY = 'Geopolitics'
-
-/**
- * Sorts the CSV rows based on the last item in each row, in ascending order
- * This is used to sort the trades by their insider trading suspicion index,
- *  which is assumed to be the last column in the CSV file
- * 
- * @param {string[]} rows - The CSV rows to sort
- * @returns {string[]} - The sorted CSV rows
- */
-const sortCsvByLastItem = function (rows) {
-  return rows.sort((a, b) => {
-    const aLastItem = parseFloat(a.split(',').slice(-1)[0])
-    const bLastItem = parseFloat(b.split(',').slice(-1)[0])
-    return bLastItem - aLastItem // Sort in descending order
-  })
-}
-
-/**
- * Gets the index of the category column in the CSV file based on the header
- * 
- * @param {string[]} headers - The first row of the CSV file, split by comma
- * @returns {number} - The index of the category column, or -1 if not found
- */
-const getCategoryColumnIndex = function (headers) {
-  for (let i = 0; i < headers.length; i++) {
-    console.log(headers[i])
-    if (headers[i].trim() == 'wager_category') {
-      return i
-    }
-  }
-  return -1
-}
-
-/**
- * Checks if a row belongs to the specified category
- * Used to filter the rows so that only rows of the selected category are displayed
- * 
- * @param {string} row - The CSV row to check
- * @param {string} trueCategoryName - The category name to compare against
- * @param {number} categoryColumnIndex - The index of the category column in the CSV row
- * @returns {boolean} - True if the row belongs to the specified category, false otherwise
- */
-const isRowInCategory = function (row, trueCategoryName, categoryColumnIndex) {
-  const rowAsList = row.split(',')
-  const actualCategoryName = rowAsList[categoryColumnIndex]
-  if (actualCategoryName.trim() == trueCategoryName.trim()) {
-    return true
-  }
-  return false
-}
+const FIRST_CATEGORY = 'Maduro in U.S. custody by January 31?'
 
 /** 
  * This function clears the table of all data
@@ -81,66 +34,134 @@ const clearDataTable = function () {
 }
 
 /**
- * Takes the raw CSV text and displays it in the table on the webpage
- * filtering the data as to only show a specified category
+ * Sorts the rows by the Insider Trading Suspicion Index
+ * "High Risk" -> "Medium Risk" -> "Low Risk" -> all other strings if ISTI is a string
+ * If tied, sort by the winnings of the trade
  * 
- * @param {string} csvText - The raw text of the CSV file
- * @param {string} categoryFilter - The category to filter the rows by
+ * If ISTI is an integer, sort by the integer value
+ * 
+ * 
+ * @param {Object} a - The first trade object to compare
+ * @param {Object} b - The second trade object to compare
+ * @returns {number} - The difference between the Insider Trading Suspicion Index of the two rows
  */
-const putDataInTable = function (csvText, categoryFilter) {
-  const rows = csvText.trim().split('\n')
-  // we might need a csv handler - this doesn't resolve for the "comma in string" case
-  const headers = rows[0].split(',')
-  const headerRow = document.getElementById('headerRow')
-  const dataBody = document.getElementById('dataBody')
 
-  const categoryColumnIndex = getCategoryColumnIndex(headers)
-  console.log(categoryColumnIndex)
-
-  headers.forEach((header) => {
-    if (CSV_HEADERS_TO_PAGE_HEADERS[header.trim()]) {
-      const th = document.createElement('th')
-      th.textContent = CSV_HEADERS_TO_PAGE_HEADERS[header.trim()] || header.trim()
-      headerRow.appendChild(th)
-    }
-  })
-
-  const sortedRows = sortCsvByLastItem(rows)
-  // the logic here - we want to iterate through sortedRows while respecting MAX_ROWS_TO_DISPLAY
-  let rowsDisplayed = 0
-  for (let i = 1; i < sortedRows.length; i++) {
-    if (rowsDisplayed == MAXIMUM_ROWS_TO_DISPLAY) {
-      break
-    }
-    if (!isRowInCategory(sortedRows[i], categoryFilter, categoryColumnIndex)) {
-      continue
-    }
-    rowsDisplayed++
-    const cells = sortedRows[i].split(',')
-    const tr = document.createElement('tr')
-    cells.forEach((cell, index) => {
-      if (CSV_HEADERS_TO_PAGE_HEADERS[headers[index].trim()]) {
-        const td = document.createElement('td')
-        td.textContent = cell.trim()
-        tr.appendChild(td)
+const sortRowsByInsiderTradingSuspicion = function (a, b) {
+  // Helper function to determine "risk" order for string ISTI
+  function getRiskOrder(isti) {
+    if (typeof isti === 'string') {
+      switch (isti) {
+        case 'High Risk': return 0;
+        case 'Medium Risk': return 1;
+        case 'Low Risk': return 2;
+        default: return 3;
       }
-    })
-    dataBody.appendChild(tr)
+    }
+    // Place non-string values after known risks
+    return 4;
   }
+
+  const aIsti = a['Insider_scores'];
+  const bIsti = b['Insider_scores'];
+
+  // If both are numbers, sort numerically (descending)
+  if (typeof aIsti === 'number' && typeof bIsti === 'number') {
+    if (bIsti !== aIsti) return bIsti - aIsti;
+    // If tied, sort by winnings descending
+    return (b['winnings'] || 0) - (a['winnings'] || 0);
+  }
+
+  // If both are strings
+  if (typeof aIsti === 'string' && typeof bIsti === 'string') {
+    const aOrder = getRiskOrder(aIsti);
+    const bOrder = getRiskOrder(bIsti);
+
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    // If tied, sort by winnings descending
+    return (b['winnings'] || 0) - (a['winnings'] || 0);
+  }
+
+  // If one is string and other is number, numbers first
+  if (typeof aIsti === 'number' && typeof bIsti !== 'number') return -1;
+  if (typeof bIsti === 'number' && typeof aIsti !== 'number') return 1;
+ 
+  // Fallback: sort by winnings descending
+  return (b['winnings'] || 0) - (a['winnings'] || 0);
 }
 
 /**
- * This function loads the data from the CSV file located in the repository 
- * and filters it by the specified category
+ * Converts a value to a string dollar value that makes sense for a visual display
+ * Adds dollar sign, rounds to 2 decimal places, and adds a comma every 3 digits
+ * 
+ * @param {number} value - The value to convert
+ * @returns {string} - The string dollar value
+ */
+const toStringDollarValue = function (value) {
+  return '$' + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+
+/**
+ * Takes the JSON data and displays it in the table on the webpage,
+ * filtering the data to only show the specified category.
+ *
+ * @param {Object[]} jsonData - The array of trade objects from the database file
+ * @param {string} categoryFilter - The category to filter the rows by
+ */
+const putJsonDataInTable = function (jsonData, categoryFilter) {
+  console.log(jsonData)
+  const headerRow = document.getElementById('headerRow')
+  const dataBody = document.getElementById('dataBody')
+
+  // Assume jsonData is an array of objects, use keys of the first object as headers
+  const headers = Object.keys(JSON_HEADERS_TO_PAGE_HEADERS)
+  
+  // Render table headers
+  headers.forEach((header) => {
+    if (JSON_HEADERS_TO_PAGE_HEADERS[header.trim()]) {
+      const th = document.createElement('th');
+      th.textContent = JSON_HEADERS_TO_PAGE_HEADERS[header.trim()] || header.trim();
+      headerRow.appendChild(th);
+    }
+  });
+
+  // Filter rows by category and sort by "insider_trading_suspicion" property
+  const filteredRows = jsonData
+    .filter(row => row['title'] && row['title'].trim() === categoryFilter.trim())
+    .sort((a, b) => {
+      return sortRowsByInsiderTradingSuspicion(a, b)
+    });
+
+  // Display rows up to MAXIMUM_ROWS_TO_DISPLAY
+  for (let i = 0; i < Math.min(filteredRows.length, MAXIMUM_ROWS_TO_DISPLAY); i++) {
+    const row = filteredRows[i];
+    const tr = document.createElement('tr');
+    headers.forEach((header) => {
+      if (JSON_HEADERS_TO_PAGE_HEADERS[header.trim()]) {
+        const td = document.createElement('td');
+        td.textContent = isDollarValueCategory.includes(header) ? toStringDollarValue(row[header]) : String(row[header] || '0').trim();
+        tr.appendChild(td);
+      }
+    });
+    dataBody.appendChild(tr);
+  }
+}
+
+
+/**
+ * This function loads the data from the database file located in the repository 
+ * and filters it by the specified category.
  * 
  * @param {string} categoryFilter - The category to filter the rows by
  */
 const loadData = function (categoryFilter) {
-  fetch(DATABASE_NAME)
-    .then(response => response.text())
-    .then((data) => {
-      putDataInTable(data, categoryFilter)
-    })
+  if (DATABASE_NAME.endsWith('.json')) {
+    fetch(DATABASE_NAME)
+      .then(response => response.json())
+      .then((jsonData) => {
+        putJsonDataInTable(jsonData, categoryFilter)
+      })
+  }
 }
 
 // On page load, we want to load the first category of data by default
