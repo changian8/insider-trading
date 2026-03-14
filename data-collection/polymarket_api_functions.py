@@ -92,7 +92,7 @@ def user_history(user_id,limit=1000):
     return [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids]
 
 # to change: parameters here (implement or not)
-def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0, max_trades=25):
+def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0.1, max_trades=25):
     '''
     Parameters: 
     trades_csv: a csv of all the trades in the market (above a certain volume)
@@ -130,6 +130,7 @@ def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0, max_trades=25
         user = row['proxyWallet']
         price = row['price']
         timestamp = row['timestamp']
+        value = row['total_trade_value']
         if (buy == 'BUY') and (price_min < price < price_max) and (timestamp <= timestamp_min + timestamp_third):
             index_used_trades.append(index)
             user_list.append(user)
