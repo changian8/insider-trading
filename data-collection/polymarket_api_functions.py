@@ -92,7 +92,7 @@ def user_history(user_id,limit=1000):
     return [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids]
 
 # to change: parameters here (implement or not)
-def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0, max_trades=25):
+def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0.1, max_trades=25):
     '''
     Parameters: 
     trades_csv: a csv of all the trades in the market (above a certain volume)
@@ -112,6 +112,11 @@ def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0, max_trades=25
     trade_mask = [False]*len(trades_csv)
     trades_csv['winnings'] = trades_csv['size'] - trades_csv['price']*trades_csv['size']
     sorted_trades = trades_csv.sort_values(by='winnings',ascending=False)
+    timestamp_max = max(sorted_trades['timestamp'])
+    timestamp_min = min(sorted_trades['timestamp'])
+    timestamp_diff = timestamp_max - timestamp_min
+    timestamp_third = timestamp_diff * 0.333
+    # now we'll check if we're in the first quarter ? half ? of trades based on time?
     user_mean_winnings = []
     user_sum_trades = []
     user_num_before = []
@@ -125,7 +130,7 @@ def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0, max_trades=25
         user = row['proxyWallet']
         price = row['price']
         timestamp = row['timestamp']
-        if (buy == 'BUY') and (price_min < price < price_max):
+        if (buy == 'BUY') and (price_min < price < price_max) and (timestamp <= timestamp_min + timestamp_third):
             index_used_trades.append(index)
             user_list.append(user)
             n_trades += 1
@@ -170,7 +175,7 @@ def plot_price_history(trades_csv,market_name):
     prices_updated = []
     sorted_trades = trades_csv.sort_values(by='timestamp')
     timestamp_list =[]
-    for row in sorted_trades.itertuples():
+    for index, row in sorted_trades.iterrows():
         timestamp = row['timestamp']
         dt_object = datetime.fromtimestamp(timestamp)
         timestamp_list.append(dt_object)
@@ -200,24 +205,23 @@ def analyze_history(final_trades_df):
     # add number of trades before this one and number after to n_trades filtering
     # add 90th percentile volume to percentile
     insider_scores = []
-    for row in final_trades_df.itertuples():
+    for index, row in final_trades_df.iterrows():
         insider_score = 'Low Risk'
         user_trades = row['user_number_of_trades']
         percentile = row['user_90th_percentile_winnings']
         potential_winnings = row['winnings']
         mean = row['user_mean_winnings']
-        if user_trades <= 20:
-            if potential_winnings >= percentile:
+        num_before = row['user_trades_before_this_trade']
+        if (user_trades <= 20) and (num_before == 0):
+            if percentile >= mean:
                 insider_score = 'High Risk'
-            if mean <= potential_winnings < percentile:
-                insider_score = 'Medium Risk'
-        if 20 < user_trades <= 50:
+        if (20 < user_trades <= 50) and (num_before == 0):
             if potential_winnings >= percentile:
                 insider_score = 'High Risk'
             if mean < potential_winnings < percentile:
                 insider_score = 'Medium Risk'
         if 50 < user_trades <= 200:
-            if potential_winnings >= percentile:
+            if (potential_winnings >= percentile) and (num_before <= 5):
                 insider_score = 'Medium Risk'
         insider_scores.append(insider_score)
     return insider_scores
