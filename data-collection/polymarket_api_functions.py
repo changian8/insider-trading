@@ -183,9 +183,10 @@ def plot_price_history(trades_csv,market_name):
         if row['outcome'] == 'No':
             price  = 1-price
         prices_updated.append(price)
-    plt.figure(1)
-    plt.xlabel("Price of yes")
-    plt.ylabel("Date")
+    fig = plt.figure(1)
+    fig.set_facecolor('#ffebcd')
+    plt.ylabel("Price of yes")
+    plt.xlabel("Date")
     plt.title(f"Price History For {market_name}")
     plt.plot(timestamp_list,prices_updated)
     plt.show()
