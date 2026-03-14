@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "insider-trading"
+version = "0.0.1"
+authors = [
+    { name="Aaron Kann" },
+    { name="Ian Chang" },
+    { name="Josh Tseng" },
+    { name="Jonathan Grothe" },
+]
+description = "Data515 final project detecting insider trading on Polymarket"
+readme = "README.md"
+requires-python = ">=3"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/changian8/insider-trading"
+Issues = "https://github.com/changian8/insider-trading/issues"
