@@ -26,3 +26,19 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    working-directory: src
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "22.19.0"
+    - name: Install dependencies
+      run: |
+        npm install
+    - name: Run tests
+      run: |
+        npm run lint
+        npm run test
