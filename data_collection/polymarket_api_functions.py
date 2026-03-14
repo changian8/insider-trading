@@ -41,10 +41,14 @@ def user_history(user_id,limit=1000):
         the price, the timestamp, the outcome they are betting on, 
         the slug, and the condition ID of the trade 
     '''
-
+    if not isinstance(user_id, str):
+        raise TypeError("user_id is not a string")
+    if not isinstance(limit, int):
+        raise(TypeError("limit is not an int"))
     user_url = f"https://data-api.polymarket.com/trades?user={user_id}&limit={limit}"
     user_trades = requests.get(user_url, timeout=(3,5))
     user_trades_json = user_trades.json()
+    user_check = user_trades_json[0]['proxyWallet']
     # using lists so we can store data from multiple queries
     sides = []
     sizes = []
@@ -54,6 +58,9 @@ def user_history(user_id,limit=1000):
     outcomes = []
     slugs = []
     condition_ids = []
+    if user_check != user_id:
+        print("user has no trades")
+        return [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids]
     for item in user_trades_json:
         potensh_winnings = item['size'] - item['price']*item['size']
         sides.append(item['side'])
