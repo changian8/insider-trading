@@ -1,62 +1,163 @@
-const {
-  sortCsvByLastItem,
-  isRowInCategory,
+const { 
+  sortingByInsiderTradingSuspicionFunction,
+  toStringDollarValue,
   clearDataTable,
-  putDataInTable,
+  putJsonDataInTable,
   loadData,
-  DATABASE_NAME,
-} = require('./index')
+  DATABASE_NAME 
+} = require('./index.js')
 
-const TEST_CSV_NAME = 'FAKE_DATA.csv'
 
-describe('We are using the real database in index.html', () => {
-  test('DATABASE_NAME should be defined and point to a CSV file', () => {
-    expect(DATABASE_NAME).toBeDefined()
-    expect(DATABASE_NAME).toMatch(/\.csv$/)
+/**
+ * Tests the sortingByInsiderTradingSuspicionFunction function
+ * 
+ * Here's a list of all possible and edge cases we need to test:
+ * 
+ * ISTI are all strings - High Risk -> Medium Risk -> Low Risk -> all other strings if ISTI is a string
+ * ISTI are all strings -> winnings serve as a tiebreaker if the string value is the same
+ * 
+ * ISTI are all numbers - descending order
+ * ISTI are all numbers -> winnings serve as a tiebreaker if the number value is the same
+ * 
+ * ISTI are a mix of strings and numbers - strings first, then numbers if ISTI is a string
+ * ISTI are a mix of strings and numbers -> winnings serve as a tiebreaker if the string value is the same
+ * ISTI are a mix of strings and numbers -> winnings serve as a tiebreaker if the number value is the same
+ * 
+ * ISTI does not exist - sort by winnings descending
+ * ISTI and winnings do not exist - return the same order
+ * 
+ * @param {Object[]} rows - The rows to sort
+ * @returns {Object[]} - The sorted rows
+ */
+describe('sortingByInsiderTradingSuspicionFunction', () => {
+  it('should sort rows by Insider Trading Suspicion Index', () => {
+    const rows = [
+      { Insider_scores: 'High Risk', winnings: 100 },
+      { Insider_scores: 'Medium Risk', winnings: 200 },
+      { Insider_scores: 'Low Risk', winnings: 300 },
+      { Insider_scores: 'not a string we have defined', winnings: 200 },
+    ]
+    const sortedRows = rows.sort(sortingByInsiderTradingSuspicionFunction)
+    expect(sortedRows).toEqual([
+      { Insider_scores: 'High Risk', winnings: 100 },
+      { Insider_scores: 'Medium Risk', winnings: 200 },
+      { Insider_scores: 'Low Risk', winnings: 300 },
+      { Insider_scores: 'not a string we have defined', winnings: 200 },
+    ])
   })
 
-  test('DATABASE_NAME is not fakedata.csv', () => {
-    expect(DATABASE_NAME).not.toBe('FAKE_DATA.csv')
+  it('winnings serve as a tiebreaker if the string value is the same', () => {
+    const rows = [
+      { Insider_scores: 'High Risk', winnings: 100 },
+      { Insider_scores: 'High Risk', winnings: 200 },
+    ]
+    const sortedRows = rows.sort(sortingByInsiderTradingSuspicionFunction)
+    expect(sortedRows).toEqual([
+      { Insider_scores: 'High Risk', winnings: 200 },
+      { Insider_scores: 'High Risk', winnings: 100 },
+    ])
+  })
+
+  it('ISTI are all numbers - descending order', () => {
+    const rows = [
+      { Insider_scores: 100, winnings: 100 },
+      { Insider_scores: 200, winnings: 200 },
+    ]
+    const sortedRows = rows.sort(sortingByInsiderTradingSuspicionFunction)
+    expect(sortedRows).toEqual([
+      { Insider_scores: 200, winnings: 200 },
+      { Insider_scores: 100, winnings: 100 },
+    ])
+  })
+
+  it('ISTI are a mix of strings and numbers - strings first, then numbers if ISTI is a string', () => {
+    const rows = [
+      { Insider_scores: 'High Risk', winnings: 100 },
+      { Insider_scores: 200, winnings: 200 },
+    ]
+    const sortedRows = rows.sort(sortingByInsiderTradingSuspicionFunction)
+    expect(sortedRows).toEqual([
+      { Insider_scores: 'High Risk', winnings: 100 },
+      { Insider_scores: 200, winnings: 200 },
+    ])
+  })
+
+  it('ISTI does not exist - sort by winnings descending', () => {
+    const rows = [
+      { winnings: 100 },
+      { winnings: 200 },
+    ]
+    const sortedRows = rows.sort(sortingByInsiderTradingSuspicionFunction)
+    expect(sortedRows).toEqual([
+      { winnings: 200 },
+      { winnings: 100 },
+    ])
+  })
+
+  it('ISTI and winnings do not exist - return the same order', () => {
+    const rows = [
+      { someOtherKey: 'this goes first' },
+      { someOtherKey: 'this goes second' },
+    ]
+    const sortedRows = rows.sort(sortingByInsiderTradingSuspicionFunction)
+    expect(sortedRows).toEqual([
+      { someOtherKey: 'this goes first' },
+      { someOtherKey: 'this goes second' },
+    ])
   })
 })
 
-describe('CSV and Data Table Functions', () => {
-  describe('sortCsvByLastItem', () => {
-    test('should sort CSV data by last item', () => {
-      fetch(TEST_CSV_NAME)
-        .then(response => response.text())
-        .then(data => {
-          const rows = data.split('\n').slice(1) // Skip header row
-          const sortedRows = sortCsvByLastItem(rows)
-            const lastItems = sortedRows.map(row => row.split(',').slice(-1)[0])
-            for (let i = 1; i < lastItems.length; i++) {
-                expect(lastItems[i - 1]).toBeLessThanOrEqual(lastItems[i])
-            }
-        })
-    })
+/**
+ * Tests the toStringDollarValue function
+ * 
+ * Here's a list of all possible and edge cases we need to test:
+ * 
+ * Positive numbers - add dollar sign, round to 2 decimal places, add comma every 3 digits
+ * Negative numbers - add dollar sign, round to 2 decimal places, add comma every 3 digits
+ * 0 - return $0.00
+ * any number less than one - return $0.[the number with 2 decimal places]
+ * No number - send back that same string
+ *
+ * 
+ * @param {number} value - The value to convert
+ * @returns {string} - The string dollar value
+ */
+describe('toStringDollarValue', () => {
+  it('should convert a positive number to a string dollar value', () => {
+    const value = 1000.123456789
+    const expected = '$1,000.12'
+    const result = toStringDollarValue(value)
+    expect(result).toEqual(expected)
   })
-
-  describe('isRowInCategory', () => {
-    test('should return true if row is in category', () => {
-      // TODO: Add test implementation
-    })
+  it('should convert a negative number to a string dollar value', () => {
+    const value = -1000.123456789
+    const expected = '-$1,000.12'
+    const result = toStringDollarValue(value)
+    expect(result).toEqual(expected)
   })
-
-  describe('clearDataTable', () => {
-    test('should clear the data table', () => {
-      // TODO: Add test implementation
-    })
+  it('should convert a 0 to a string dollar value', () => {
+    const value = 0
+    const expected = '$0.00'
+    const result = toStringDollarValue(value)
+    expect(result).toEqual(expected)
   })
-
-  describe('putDataInTable', () => {
-    test('should insert data into table', () => {
-      // TODO: Add test implementation
-    })
+  it('should convert a number less than one to a string dollar value', () => {
+    const value = 0.123456789
+    const expected = '$0.12'
+    const result = toStringDollarValue(value)
+    expect(result).toEqual(expected)
   })
+  it('should send back the same string if no number is provided', () => {
+    const value = 'not a number'
+    const expected = 'not a number'
+    const result = toStringDollarValue(value)
+    expect(result).toEqual(expected)
+  })
+})
 
-  describe('loadData', () => {
-    test('should load data correctly', () => {
-      // TODO: Add test implementation
-    })
+describe('DATABASE_NAME', () => {
+  it('should be a JSON and not a CSV', () => {
+    expect(DATABASE_NAME).toMatch(/\.json$/)
+    expect(DATABASE_NAME).not.toMatch(/\.csv$/)
   })
 })

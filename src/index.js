@@ -44,7 +44,7 @@ const clearDataTable = function () {
  * @param {Object} b - The second trade object to compare
  * @returns {number} - The difference between the Insider Trading Suspicion Index of the two rows
  */
-const sortRowsByInsiderTradingSuspicion = function (a, b) {
+const sortingByInsiderTradingSuspicionFunction = function (a, b) {
   // Helper function to determine "risk" order for string ISTI
   function getRiskOrder(isti) {
     if (typeof isti === 'string') {
@@ -79,8 +79,8 @@ const sortRowsByInsiderTradingSuspicion = function (a, b) {
   }
 
   // If one is string and other is number, numbers first
-  if (typeof aIsti === 'number' && typeof bIsti !== 'number') return -1
-  if (typeof bIsti === 'number' && typeof aIsti !== 'number') return 1
+  if (typeof aIsti === 'number' && typeof bIsti !== 'number') return 1
+  if (typeof bIsti === 'number' && typeof aIsti !== 'number') return -1
 
   // Fallback: sort by winnings descending
   return (b['winnings'] || 0) - (a['winnings'] || 0)
@@ -94,7 +94,12 @@ const sortRowsByInsiderTradingSuspicion = function (a, b) {
  * @returns {string} - The string dollar value
  */
 const toStringDollarValue = function (value) {
-  return '$' + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  if (typeof value !== 'number') return value
+
+  const sign = value < 0 ? '-' : ''
+  const absoluteValue = Math.abs(value)
+  const formattedNumber = absoluteValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return `${sign}$${formattedNumber}`
 }
 
 /**
@@ -125,7 +130,7 @@ const putJsonDataInTable = function (jsonData, categoryFilter) {
   const filteredRows = jsonData
     .filter(row => row['title'] && row['title'].trim() === categoryFilter.trim())
     .sort((a, b) => {
-      return sortRowsByInsiderTradingSuspicion(a, b)
+      return sortingByInsiderTradingSuspicionFunction(a, b)
     })
 
   // Display rows up to MAXIMUM_ROWS_TO_DISPLAY
@@ -181,7 +186,7 @@ filterButtons.forEach((button) => {
 })
 
 module.exports = {
-  sortRowsByInsiderTradingSuspicion,
+  sortingByInsiderTradingSuspicionFunction,
   toStringDollarValue,
   clearDataTable,
   putJsonDataInTable,
