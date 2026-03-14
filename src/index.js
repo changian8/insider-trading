@@ -10,6 +10,12 @@ const JSON_HEADERS_TO_PAGE_HEADERS = {
   Insider_scores: 'Insider Scores',
 }
 
+const DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME = {
+  'Maduro in U.S. custody by January 31?': 'maduro_capture_pricehistory.png',
+  'Will Lady Gaga perform during the Super Bowl LX halftime show?': 'halftime_guest_pricehistory.png',
+  'US strikes Iran by February 28, 2026?': 'iran_strike_pricehistory.png',
+}
+
 const isDollarValueCategory = ['total_trade_value', 'winnings', 'user_mean_winnings', 'user_90th_percentile_winnings']
 const DATABASE_NAME = 'trades_for_website.json'
 const MAXIMUM_ROWS_TO_DISPLAY = 8
@@ -160,10 +166,18 @@ const loadData = function (categoryFilter) {
       .then(response => response.json())
       .then((jsonData) => {
         putJsonDataInTable(jsonData, categoryFilter)
+        displayPriceHistoryChart(categoryFilter)
       })
   }
 }
 
+const displayPriceHistoryChart = function (categoryFilter) {
+  const priceHistoryChart = document.getElementById('priceHistoryChart')
+  const filename = DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME[categoryFilter]
+  const img = document.createElement('img')
+  img.src = `./charts/${filename}`
+  priceHistoryChart.appendChild(img)
+}
 // On page load, we want to load the first category of data by default
 document.addEventListener('DOMContentLoaded', () => {
   loadData(FIRST_CATEGORY)
