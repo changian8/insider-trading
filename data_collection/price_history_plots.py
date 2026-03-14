@@ -29,11 +29,8 @@ print(f"number of yes maduro bets: {maduro_yes}")
 print(f"earliest trade: {min_maduro_timestamp}")
 print(f"latest trade: {max_maduro_timestamp}")
 
-'''
+
 paf.plot_price_history(halftime,"Halftime Special Guest")
 paf.plot_price_history(iran_strike,"Iran Strike")
 paf.plot_price_history(maduro,"Maduro Capture")
-'''
 
-user_id = "abcdefghijklmnopqrstuvwxyzIdontlikeinsidertrading"
-paf.user_history(user_id,limit=10)
