@@ -115,7 +115,7 @@ def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0, max_trades=25
     timestamp_max = max(sorted_trades['timestamp'])
     timestamp_min = min(sorted_trades['timestamp'])
     timestamp_diff = timestamp_max - timestamp_min
-    timestamp_half = timestamp_diff * 0.5
+    timestamp_third = timestamp_diff * 0.333
     # now we'll check if we're in the first quarter ? half ? of trades based on time?
     user_mean_winnings = []
     user_sum_trades = []
@@ -130,7 +130,7 @@ def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0, max_trades=25
         user = row['proxyWallet']
         price = row['price']
         timestamp = row['timestamp']
-        if (buy == 'BUY') and (price_min < price < price_max) and (timestamp <= timestamp_min + timestamp_half):
+        if (buy == 'BUY') and (price_min < price < price_max) and (timestamp <= timestamp_min + timestamp_third):
             index_used_trades.append(index)
             user_list.append(user)
             n_trades += 1
