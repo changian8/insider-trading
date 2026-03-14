@@ -130,7 +130,6 @@ def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0.1, max_trades=
         user = row['proxyWallet']
         price = row['price']
         timestamp = row['timestamp']
-        value = row['total_trade_value']
         if (buy == 'BUY') and (price_min < price < price_max) and (timestamp <= timestamp_min + timestamp_third):
             index_used_trades.append(index)
             user_list.append(user)
