@@ -56,7 +56,7 @@ npm install
 
 and then 
 ```
-npm lint
+npx lint
 ```
 
 to run the linter and/or 
