@@ -56,13 +56,13 @@ npm install
 
 and then 
 ```
-npx lint
+npm run lint
 ```
 
 to run the linter and/or 
 
 ```
-npm test
+npm run test
 ```
 
 to run the tests.  
