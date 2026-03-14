@@ -1,5 +1,5 @@
 const JSON_HEADERS_TO_PAGE_HEADERS = {
-  title: 'Event Name', 
+  title: 'Event Name',
   total_trade_value: 'Total Trade Value',
   winnings: 'Winnings',
   user_mean_winnings: 'User Mean Winnings',
@@ -15,11 +15,11 @@ const DATABASE_NAME = 'trades_for_website.json'
 const MAXIMUM_ROWS_TO_DISPLAY = 8
 const FIRST_CATEGORY = 'Maduro in U.S. custody by January 31?'
 
-/** 
+/**
  * This function clears the table of all data
  * We need this when we want to load a new category of data after a button click
- * 
- * @params none 
+ *
+ * @params none
  * @returns none
 **/
 const clearDataTable = function () {
@@ -37,69 +37,65 @@ const clearDataTable = function () {
  * Sorts the rows by the Insider Trading Suspicion Index
  * "High Risk" -> "Medium Risk" -> "Low Risk" -> all other strings if ISTI is a string
  * If tied, sort by the winnings of the trade
- * 
+ *
  * If ISTI is an integer, sort by the integer value
- * 
- * 
+ *
  * @param {Object} a - The first trade object to compare
  * @param {Object} b - The second trade object to compare
  * @returns {number} - The difference between the Insider Trading Suspicion Index of the two rows
  */
-
 const sortRowsByInsiderTradingSuspicion = function (a, b) {
   // Helper function to determine "risk" order for string ISTI
   function getRiskOrder(isti) {
     if (typeof isti === 'string') {
       switch (isti) {
-        case 'High Risk': return 0;
-        case 'Medium Risk': return 1;
-        case 'Low Risk': return 2;
-        default: return 3;
+        case 'High Risk': return 0
+        case 'Medium Risk': return 1
+        case 'Low Risk': return 2
+        default: return 3
       }
     }
-    // Place non-string values after known risks
-    return 4;
+    return 4
   }
 
-  const aIsti = a['Insider_scores'];
-  const bIsti = b['Insider_scores'];
+  const aIsti = a['Insider_scores']
+  const bIsti = b['Insider_scores']
 
   // If both are numbers, sort numerically (descending)
   if (typeof aIsti === 'number' && typeof bIsti === 'number') {
-    if (bIsti !== aIsti) return bIsti - aIsti;
+    if (bIsti !== aIsti) return bIsti - aIsti
     // If tied, sort by winnings descending
-    return (b['winnings'] || 0) - (a['winnings'] || 0);
+    return (b['winnings'] || 0) - (a['winnings'] || 0)
   }
 
   // If both are strings
   if (typeof aIsti === 'string' && typeof bIsti === 'string') {
-    const aOrder = getRiskOrder(aIsti);
-    const bOrder = getRiskOrder(bIsti);
+    const aOrder = getRiskOrder(aIsti)
+    const bOrder = getRiskOrder(bIsti)
 
-    if (aOrder !== bOrder) return aOrder - bOrder;
+    if (aOrder !== bOrder) return aOrder - bOrder
     // If tied, sort by winnings descending
-    return (b['winnings'] || 0) - (a['winnings'] || 0);
+    return (b['winnings'] || 0) - (a['winnings'] || 0)
   }
 
   // If one is string and other is number, numbers first
-  if (typeof aIsti === 'number' && typeof bIsti !== 'number') return -1;
-  if (typeof bIsti === 'number' && typeof aIsti !== 'number') return 1;
- 
+  if (typeof aIsti === 'number' && typeof bIsti !== 'number') return -1
+  if (typeof bIsti === 'number' && typeof aIsti !== 'number') return 1
+
   // Fallback: sort by winnings descending
-  return (b['winnings'] || 0) - (a['winnings'] || 0);
+  return (b['winnings'] || 0) - (a['winnings'] || 0)
 }
 
 /**
  * Converts a value to a string dollar value that makes sense for a visual display
  * Adds dollar sign, rounds to 2 decimal places, and adds a comma every 3 digits
- * 
+ *
  * @param {number} value - The value to convert
  * @returns {string} - The string dollar value
  */
 const toStringDollarValue = function (value) {
-  return '$' + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return '$' + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
-
 
 /**
  * Takes the JSON data and displays it in the table on the webpage,
@@ -115,43 +111,42 @@ const putJsonDataInTable = function (jsonData, categoryFilter) {
 
   // Assume jsonData is an array of objects, use keys of the first object as headers
   const headers = Object.keys(JSON_HEADERS_TO_PAGE_HEADERS)
-  
+
   // Render table headers
   headers.forEach((header) => {
     if (JSON_HEADERS_TO_PAGE_HEADERS[header.trim()]) {
-      const th = document.createElement('th');
-      th.textContent = JSON_HEADERS_TO_PAGE_HEADERS[header.trim()] || header.trim();
-      headerRow.appendChild(th);
+      const th = document.createElement('th')
+      th.textContent = JSON_HEADERS_TO_PAGE_HEADERS[header.trim()] || header.trim()
+      headerRow.appendChild(th)
     }
-  });
+  })
 
   // Filter rows by category and sort by "insider_trading_suspicion" property
   const filteredRows = jsonData
     .filter(row => row['title'] && row['title'].trim() === categoryFilter.trim())
     .sort((a, b) => {
       return sortRowsByInsiderTradingSuspicion(a, b)
-    });
+    })
 
   // Display rows up to MAXIMUM_ROWS_TO_DISPLAY
   for (let i = 0; i < Math.min(filteredRows.length, MAXIMUM_ROWS_TO_DISPLAY); i++) {
-    const row = filteredRows[i];
-    const tr = document.createElement('tr');
+    const row = filteredRows[i]
+    const tr = document.createElement('tr')
     headers.forEach((header) => {
       if (JSON_HEADERS_TO_PAGE_HEADERS[header.trim()]) {
-        const td = document.createElement('td');
-        td.textContent = isDollarValueCategory.includes(header) ? toStringDollarValue(row[header]) : String(row[header] || '0').trim();
-        tr.appendChild(td);
+        const td = document.createElement('td')
+        td.textContent = isDollarValueCategory.includes(header) ? toStringDollarValue(row[header]) : String(row[header] || '0').trim()
+        tr.appendChild(td)
       }
-    });
-    dataBody.appendChild(tr);
+    })
+    dataBody.appendChild(tr)
   }
 }
 
-
 /**
- * This function loads the data from the database file located in the repository 
+ * This function loads the data from the database file located in the repository
  * and filters it by the specified category.
- * 
+ *
  * @param {string} categoryFilter - The category to filter the rows by
  */
 const loadData = function (categoryFilter) {
@@ -186,10 +181,10 @@ filterButtons.forEach((button) => {
 })
 
 module.exports = {
-  sortCsvByLastItem,
-  isRowInCategory,
+  sortRowsByInsiderTradingSuspicion,
+  toStringDollarValue,
   clearDataTable,
-  putDataInTable,
+  putJsonDataInTable,
   loadData,
   DATABASE_NAME,
 }
