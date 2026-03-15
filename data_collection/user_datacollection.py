@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 import polymarket_api_functions as paf
 
-halftime = pd.read_csv("data-collection/sb_performance_trades.csv")
-iran_strike = pd.read_csv("data-collection/us_strikes_iran_trades.csv")
-maduro = pd.read_csv("data-collection/maduro_trades.csv")
+halftime = pd.read_csv("data_collection/sb_performance_trades.csv")
+iran_strike = pd.read_csv("data_collection/us_strikes_iran_trades.csv")
+maduro = pd.read_csv("data_collection/maduro_trades.csv")
 
 halftime_full_df = paf.trades_to_userhistory(halftime)
 iran_full_df = paf.trades_to_userhistory(iran_strike)

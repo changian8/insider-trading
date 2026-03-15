@@ -140,17 +140,21 @@ def trades_to_userhistory(trades_df, price_max=0.85, price_min=0.1, max_trades=2
     else:
         raise ValueError("data frame doesn't contain timestamp column")
     
+    #current typez; object
+    '''
     if 'side' in trades_df.columns:
         if  trades_df['side'].dtype != str:
             raise TypeError("side column is not a string")
     else:
         raise ValueError("data frame doesn't contain side column")
     
+    
     if 'proxyWallet' in trades_df.columns:
         if trades_df['proxyWallet'].dtype != str:
             raise TypeError("proxyWallet column is not a string")
     else:
         raise ValueError("data frame doesn't contain proxyWallet column")
+    '''
 
     # check that price boundaries are ints from 0 to 1
 
