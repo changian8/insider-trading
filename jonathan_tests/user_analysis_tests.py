@@ -28,6 +28,7 @@ class HistoryAnalysisTests(unittest.TestCase):
         self.assertEqual(user_response,[[],[],[],[],[],[],[],[]])
 
     # user with no trades
+    # note: this is an account I created with no trades
     def test_no_trades(self):
         user_id = "0x15a52c8504b2318f99aD7df8f511F30393BD6660-1773553384642"
         user_response = paf.user_history(user_id)
@@ -36,6 +37,7 @@ class HistoryAnalysisTests(unittest.TestCase):
     # user with a few of trades
     def test_normal_user(self):
         # note: this is supposed to be a user that probably won't trade anymore, but if they do this test may fail...
+        # one of the noted iran strike potential insider traders
         user_id = "0xa4eb52229991c074bc560f825bf2776d77acd010"
         user_response = paf.user_history(user_id)
         self.assertEqual(user_response, [['BUY','BUY'],[889.12,21508.02],[0.25,0.19],[666.84,17421.4962],[1772242789,1772240143],['Yes','Yes'],
