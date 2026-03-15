@@ -124,7 +124,6 @@ const toStringDollarValue = function (value) {
  * @param {string} categoryFilter - The category to filter the rows by
  */
 const putJsonDataInTable = function (jsonData, categoryFilter) {
-  console.log(jsonData)
   const headerRow = document.getElementById('headerRow')
   const dataBody = document.getElementById('dataBody')
 
@@ -218,7 +217,6 @@ const filterButtons = document.querySelectorAll('.filter-button')
 filterButtons.forEach((button) => {
   button.addEventListener('click', () => {
     const filter = button.getAttribute('data-filter')
-    console.log(`Filter button clicked: ${filter}`)
     // get rid of active class on all buttons
     filterButtons.forEach(btn => btn.classList.remove('active'))
     // set the clicked button as active
