@@ -154,7 +154,7 @@ const putJsonDataInTable = function (jsonData, categoryFilter) {
     // if outcome is Yes, add a green background to the row
     if (row['outcome'] === 'Yes') {
       tr.classList.add('winner-row')
-    } 
+    }
     else if (row['outcome'] === 'No') {
       tr.classList.add('loser-row')
     }
