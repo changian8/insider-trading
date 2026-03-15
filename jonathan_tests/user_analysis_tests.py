@@ -61,7 +61,7 @@ class HistoryAnalysisTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             paf.trades_to_userhistory(halftime_no_size)
         size_wrong_type = ['a']*len(halftime_size_test)
-        halftime_size_test.loc['size'] = size_wrong_type
+        halftime_size_test['size'] = size_wrong_type
         with self.assertRaises(TypeError):
             paf.trades_to_userhistory(halftime_size_test)
 
