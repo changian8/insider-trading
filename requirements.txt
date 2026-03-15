@@ -3,7 +3,7 @@
 # platform: osx-arm64
 # created-by: conda 26.1.1
 matplotlib>=3.10
-brotlicffi>=1.17
+# brotlicffi>=1.17
 numpy==2.4.2
 requests>=2.32
 pytrends>=4.9
