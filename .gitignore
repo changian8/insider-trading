@@ -205,3 +205,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+#Node Modules for the frontend
+src/node_modules
+
+#DS Store
+.DS_Store
