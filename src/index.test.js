@@ -14,17 +14,17 @@ const {
  * Here's a list of all possible and edge cases we need to test:
  * 
  * ISTI are all strings - High Risk -> Medium Risk -> Low Risk -> all other strings if ISTI is a string
- * ISTI are all strings -> winnings serve as a tiebreaker if the string value is the same
+ * ISTI are all strings -> potential winnings serve as a tiebreaker if the string value is the same
  * 
  * ISTI are all numbers - descending order
- * ISTI are all numbers -> winnings serve as a tiebreaker if the number value is the same
+ * ISTI are all numbers -> potential winnings serve as a tiebreaker if the number value is the same
  * 
  * ISTI are a mix of strings and numbers - strings first, then numbers if ISTI is a string
- * ISTI are a mix of strings and numbers -> winnings serve as a tiebreaker if the string value is the same
- * ISTI are a mix of strings and numbers -> winnings serve as a tiebreaker if the number value is the same
+ * ISTI are a mix of strings and numbers -> potential winnings serve as a tiebreaker if the string value is the same
+ * ISTI are a mix of strings and numbers -> potential winnings serve as a tiebreaker if the number value is the same
  * 
- * ISTI does not exist - sort by winnings descending
- * ISTI and winnings do not exist - return the same order
+ * ISTI does not exist - sort by potential winnings descending
+ * ISTI and potential winnings do not exist - return the same order
  * 
  * @param {Object[]} rows - The rows to sort
  * @returns {Object[]} - The sorted rows
@@ -32,69 +32,69 @@ const {
 describe('sortingByInsiderTradingSuspicionFunction', () => {
   it('should sort rows by Insider Trading Suspicion Index', () => {
     const rows = [
-      { Insider_scores: 'High Risk', winnings: 100 },
-      { Insider_scores: 'Medium Risk', winnings: 200 },
-      { Insider_scores: 'Low Risk', winnings: 300 },
-      { Insider_scores: 'not a string we have defined', winnings: 200 },
+      { Insider_scores: 'High Risk', size: 100 },
+      { Insider_scores: 'Medium Risk', size: 200 },
+      { Insider_scores: 'Low Risk', size: 300 },
+      { Insider_scores: 'not a string we have defined', size: 200 },
     ]
     const sortedRows = rows.sort(sortingByInsiderTradingSuspicionFunction)
     expect(sortedRows).toEqual([
-      { Insider_scores: 'High Risk', winnings: 100 },
-      { Insider_scores: 'Medium Risk', winnings: 200 },
-      { Insider_scores: 'Low Risk', winnings: 300 },
-      { Insider_scores: 'not a string we have defined', winnings: 200 },
+      { Insider_scores: 'High Risk', size: 100 },
+      { Insider_scores: 'Medium Risk', size: 200 },
+      { Insider_scores: 'Low Risk', size: 300 },
+      { Insider_scores: 'not a string we have defined', size: 200 },
     ])
   })
 
-  it('winnings serve as a tiebreaker if the string value is the same', () => {
+  it('potential winnings serve as a tiebreaker if the string value is the same', () => {
     const rows = [
-      { Insider_scores: 'High Risk', winnings: 100 },
-      { Insider_scores: 'High Risk', winnings: 200 },
+      { Insider_scores: 'High Risk', size: 100 },
+      { Insider_scores: 'High Risk', size: 200 },
     ]
     const sortedRows = rows.sort(sortingByInsiderTradingSuspicionFunction)
     expect(sortedRows).toEqual([
-      { Insider_scores: 'High Risk', winnings: 200 },
-      { Insider_scores: 'High Risk', winnings: 100 },
+      { Insider_scores: 'High Risk', size: 200 },
+      { Insider_scores: 'High Risk', size: 100 },
     ])
   })
 
   it('ISTI are all numbers - descending order', () => {
     const rows = [
-      { Insider_scores: 100, winnings: 100 },
-      { Insider_scores: 200, winnings: 200 },
+      { Insider_scores: 100, size: 100 },
+      { Insider_scores: 200, size: 200 },
     ]
     const sortedRows = rows.sort(sortingByInsiderTradingSuspicionFunction)
     expect(sortedRows).toEqual([
-      { Insider_scores: 200, winnings: 200 },
-      { Insider_scores: 100, winnings: 100 },
+      { Insider_scores: 200, size: 200 },
+      { Insider_scores: 100, size: 100 },
     ])
   })
 
   it('ISTI are a mix of strings and numbers - strings first, then numbers if ISTI is a string', () => {
     const rows = [
-      { Insider_scores: 'High Risk', winnings: 100 },
-      { Insider_scores: 200, winnings: 200 },
+      { Insider_scores: 'High Risk', size: 100 },
+      { Insider_scores: 200, size: 200 },
     ]
     const sortedRows = rows.sort(sortingByInsiderTradingSuspicionFunction)
     expect(sortedRows).toEqual([
-      { Insider_scores: 'High Risk', winnings: 100 },
-      { Insider_scores: 200, winnings: 200 },
+      { Insider_scores: 'High Risk', size: 100 },
+      { Insider_scores: 200, size: 200 },
     ])
   })
 
   it('ISTI does not exist - sort by winnings descending', () => {
     const rows = [
-      { winnings: 100 },
-      { winnings: 200 },
+      { size: 100 },
+      { size: 200 },
     ]
     const sortedRows = rows.sort(sortingByInsiderTradingSuspicionFunction)
     expect(sortedRows).toEqual([
-      { winnings: 200 },
-      { winnings: 100 },
+      { size: 200 },
+      { size: 100 },
     ])
   })
 
-  it('ISTI and winnings do not exist - return the same order', () => {
+  it('ISTI and total_trade_value do not exist - return the same order', () => {
     const rows = [
       { someOtherKey: 'this goes first' },
       { someOtherKey: 'this goes second' },

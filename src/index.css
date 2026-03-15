@@ -51,6 +51,14 @@ td {
     background-color: #fff8dc;
 }
 
+.winner-row td {
+    background-color: lightgreen !important;
+}
+
+.loser-row td {
+    background-color: lightcoral !important;
+}
+
 tr:nth-child(even) {
     background-color: #f2f2f2;
 }
@@ -71,4 +79,25 @@ tr:nth-child(even) {
 
 .active {
     background-color: blue;
+}
+
+#chartsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-top: 32px;
+    margin-bottom: 8px;
+    width: 100%;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 24px;
+}
+
+#chartsContainer img {
+    flex: 1 1 0;
+    max-width: 49%;
+    height: auto;
+    object-fit: contain;
 }

@@ -13,21 +13,33 @@
     <h1 id="header">Could we identify trades that looked like insider trading on Polymarket?</h1>
     <h2 id="authors">Ian Chang, Jonathon Grothe, Aaron Kann, Josh Tseng</h2>
 
-    <header font-size="xxlarge">The Short Answer: No, Not Really or Yes, We Can</header>
+    <header font-size="xxlarge"><b>The Short Answer:</b> No, we did not, but there's still work to be done!</header>
 
-    <p id="findings"> This is a paragraph where we will describe our conclusions and findings. 
-        Immediately, we will begin with a clear <b>Yes or No Answer</b> as to the question of did we find insider trading
-        to be widescale and easily identifiable by the features of the trade itself.  
-        We will then go on to describe the motivation behind the investigation, that Maduro trade
-        Secondly, we will lay out what we did on a high level, including describing the limiations of our research
-        in a clear and precise manor such that you don't have to understand technical details to know
-        why our results may be misleading.
+    <p id="findings"> 
+        <b>Our analysis did not find any evidence of insider trading on Polymarket,</b> but our analysis is very limited in scope and
+        we should not conclude that insider trading doesn't exist - just that we couldn't quite find the proof we wanted. 
+        <br><br>
+        To begin, we looked at the Maduro trade that went viral.  And to our credit, for this trade, we found that trades with 
+        the characteristics of the trade that went viral did win more often than they lost!
+        However, as the Maduro trade was the inspiration for our analysis anyway, this doesn't really prove
+        anything new, it just confirms what we already knew to be true, as it was this trade was the inspiration for our analysis in the first place.
+        <br><br>
+        After that, we looked at the Lady Gaga halftime show trade and the recent Iran strike trade.
+        And we found that the trades we flagged as suspicious lost more often than they won, in fact,
+        every single trade we flagged as suspicious lost! Embarrasing!
+        <br><br>
+        We realized later in our reseach that these classes were more biased than we thought, as users who tended to go
+        on the site tended to purchase the favorite in the market more often (meaning, the market makers took the minority position),
+        which threw an unexpected wrench in our analysis that we were not prepared for.  
+        <br><br>
+        There are many flaws with our approach: the amount of trades was more limited than we anticipated due to the sheer size of the data,
+        and we realized after the fact that the trade that we thought was insider trading was deleted from the website before we could analyze it.
+        Given more time, we would have liked to analyze more trades and more markets by finding a way to store all the data we need,
+        and implement live tracking using cloud compute as to not run into that pesky second issue. 
+        <br><br>
+        As an aside, it is our official position that attempting to trade based upon this data is a bad idea (and not just because we didn't find any evidence of insider trading)  <!-- <a href="#disclaimer-full">Here's why.</a> -->
     </p>
-
-    <p id="disclaimers"> 
-        It is our official position that attempting to trade based upon this data is a bad idea.  <!-- <a href="#disclaimer-full">Here's why.</a> -->
-    </p>
-
+    
     <div id="buttons">
         <button class="filter-button active" data-filter="Maduro in U.S. custody by January 31?">Maduro</button>
         <button class="filter-button" data-filter="Will Lady Gaga perform during the Super Bowl LX halftime show?">Lady Gaga Halftime Show</button>
@@ -41,7 +53,7 @@
         <tbody id="dataBody"></tbody>
     </table>
 
-    <div id="priceHistoryChart"></div>
+    <div id="chartsContainer"></div>
 
     <p id="details">
         In this section, we will go over the details that only someone who wants to replicate the project will want to know.
@@ -51,7 +63,7 @@
 
     <p id="endnote">
         Thank you for making it all the way to the bottom of the page, here's a
-        <i>link to the GitHub</i> if you'd like to continue our research!
+        <a href="https://github.com/changian8/insider-trading">link to the GitHub</a> if you'd like to continue our research!
     </p>
 
     <hr>

@@ -1,12 +1,14 @@
 const JSON_HEADERS_TO_PAGE_HEADERS = {
-  title: 'Event Name',
+  price: 'Cost Per Share at Purchase',
+  timestamp: 'Purchase Time',
   total_trade_value: 'Total Trade Value',
-  winnings: 'Winnings',
-  user_mean_winnings: 'User Mean Winnings',
-  user_number_of_trades: 'User Number of Trades',
+  size: 'Potential Winnings',
   user_trades_before_this_trade: 'User Trades Before This Trade',
   user_trades_after_this_trade: 'User Trades After This Trade',
+  winnings: 'User Total Winnings',
+  user_mean_winnings: 'User Mean Winnings',
   user_90th_percentile_winnings: 'User 90th Percentile Winnings',
+  outcome: 'Winner?',
   Insider_scores: 'Insider Scores',
 }
 
@@ -16,7 +18,13 @@ const DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME = {
   'US strikes Iran by February 28, 2026?': 'iran_strike_pricehistory.png',
 }
 
-const isDollarValueCategory = ['total_trade_value', 'winnings', 'user_mean_winnings', 'user_90th_percentile_winnings']
+const DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME = {
+  'Maduro in U.S. custody by January 31?': 'maduro_capture_pricehistory.png',
+  'Will Lady Gaga perform during the Super Bowl LX halftime show?': 'halftime_guest_pricehistory.png',
+  'US strikes Iran by February 28, 2026?': 'iran_strike_pricehistory.png',
+}
+
+const isDollarValueCategory = ['total_trade_value', 'winnings', 'user_mean_winnings', 'user_90th_percentile_winnings', 'size', 'price']
 const DATABASE_NAME = 'trades_for_website.json'
 const MAXIMUM_ROWS_TO_DISPLAY = 8
 const FIRST_CATEGORY = 'Maduro in U.S. custody by January 31?'
@@ -42,7 +50,7 @@ const clearDataTable = function () {
 /**
  * Sorts the rows by the Insider Trading Suspicion Index
  * "High Risk" -> "Medium Risk" -> "Low Risk" -> all other strings if ISTI is a string
- * If tied, sort by the winnings of the trade
+ * If tied, sort by the total potential winnings of the trade
  *
  * If ISTI is an integer, sort by the integer value
  *
@@ -70,8 +78,8 @@ const sortingByInsiderTradingSuspicionFunction = function (a, b) {
   // If both are numbers, sort numerically (descending)
   if (typeof aIsti === 'number' && typeof bIsti === 'number') {
     if (bIsti !== aIsti) return bIsti - aIsti
-    // If tied, sort by winnings descending
-    return (b['winnings'] || 0) - (a['winnings'] || 0)
+    // If tied, sort by total trade value descending
+    return (b['size'] || 0) - (a['size'] || 0)
   }
 
   // If both are strings
@@ -81,7 +89,7 @@ const sortingByInsiderTradingSuspicionFunction = function (a, b) {
 
     if (aOrder !== bOrder) return aOrder - bOrder
     // If tied, sort by winnings descending
-    return (b['winnings'] || 0) - (a['winnings'] || 0)
+    return (b['size'] || 0) - (a['size'] || 0)
   }
 
   // If one is string and other is number, numbers first
@@ -89,7 +97,7 @@ const sortingByInsiderTradingSuspicionFunction = function (a, b) {
   if (typeof bIsti === 'number' && typeof aIsti !== 'number') return -1
 
   // Fallback: sort by winnings descending
-  return (b['winnings'] || 0) - (a['winnings'] || 0)
+  return (b['size'] || 0) - (a['size'] || 0)
 }
 
 /**
@@ -143,6 +151,14 @@ const putJsonDataInTable = function (jsonData, categoryFilter) {
   for (let i = 0; i < Math.min(filteredRows.length, MAXIMUM_ROWS_TO_DISPLAY); i++) {
     const row = filteredRows[i]
     const tr = document.createElement('tr')
+
+    // if outcome is Yes, add a green background to the row
+    if (row['outcome'] === 'Yes') {
+      tr.classList.add('winner-row')
+    } else if (row['outcome'] === 'No') {
+      tr.classList.add('loser-row')
+    }
+
     headers.forEach((header) => {
       if (JSON_HEADERS_TO_PAGE_HEADERS[header.trim()]) {
         const td = document.createElement('td')
@@ -171,12 +187,26 @@ const loadData = function (categoryFilter) {
   }
 }
 
+/**
+ * Displays the price history and google search charts for the specified category
+ *
+ * @param {string} categoryFilter - The category to display the charts for
+ */
 const displayPriceHistoryChart = function (categoryFilter) {
-  const priceHistoryChart = document.getElementById('priceHistoryChart')
-  const filename = DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME[categoryFilter]
-  const img = document.createElement('img')
-  img.src = `./charts/${filename}`
-  priceHistoryChart.appendChild(img)
+  const priceHistoryChart = document.getElementById('chartsContainer')
+  const priceHistoryFilename = DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME[categoryFilter]
+  const googleSearchFilename = DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME[categoryFilter]
+  const priceHistoryImg = document.createElement('img')
+  priceHistoryImg.src = `./charts/${priceHistoryFilename}`
+  const googleSearchImg = document.createElement('img')
+  googleSearchImg.src = `./charts/${googleSearchFilename}`
+  // delete all children of priceHistoryChart
+  while (priceHistoryChart.firstChild) {
+    priceHistoryChart.removeChild(priceHistoryChart.firstChild)
+  }
+  // append the price history and google search charts to the priceHistoryChart
+  priceHistoryChart.appendChild(priceHistoryImg)
+  priceHistoryChart.appendChild(googleSearchImg)
 }
 // On page load, we want to load the first category of data by default
 document.addEventListener('DOMContentLoaded', () => {
