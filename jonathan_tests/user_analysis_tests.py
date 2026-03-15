@@ -1,8 +1,9 @@
 '''
 Tests for the user history and analysis aspect of this project
 '''
-from data_collection import polymarket_api_functions as paf
 import unittest
+import pandas as pd
+from data_collection import polymarket_api_functions as paf
 
 class HistoryAnalysisTests(unittest.TestCase):
 
@@ -48,6 +49,23 @@ class HistoryAnalysisTests(unittest.TestCase):
     # trades_to_userhistory tests:
 
     # check all the types 
+
+    def test_not_a_df(self):
+        trades_df= [['a'],['B'],['c'],['d']]
+        with self.assertRaises(TypeError):
+            paf.trades_to_userhistory(trades_df)
+
+    def test_size_column(self):
+        halftime_size_test = pd.read_csv("data_collection/sb_performance_trades.csv")
+        halftime_no_size = halftime_size_test.rename(columns = {'size':'not_size'})
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_no_size)
+        size_wrong_type = ['a']*len(halftime_size_test)
+        halftime_size_test.loc['size'] = size_wrong_type
+        with self.assertRaises(TypeError):
+            paf.trades_to_userhistory(halftime_size_test)
+
+        
     # and requirements of the df 
     # and parameter edge cases
     # check simple normal example - one where we break and one where we don't ?
@@ -67,3 +85,6 @@ class HistoryAnalysisTests(unittest.TestCase):
     # check type of df
     # check columns (existence, types)
     # check a few normal examples - all low risk, some of all, etc.
+
+suite = unittest.TestLoader().loadTestsFromTestCase(HistoryAnalysisTests)
+_ = unittest.TextTestRunner().run(suite)
