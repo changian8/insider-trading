@@ -8,6 +8,7 @@ import time
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import requests
 
 # Helper functions
@@ -59,7 +60,7 @@ def user_history(user_id,limit=1000):
     slugs = []
     condition_ids = []
     if user_check != user_id:
-        print("user has no trades")
+        print("user either has not traded at all or does not exist")
         return [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids]
     for item in user_trades_json:
         potensh_winnings = item['size'] - item['price']*item['size']
@@ -95,14 +96,16 @@ def user_history(user_id,limit=1000):
             slugs.append(new_item['slug'])
             condition_ids.append(new_item['conditionId'])
         offset += limit # could add check here to prevent error
+        if offset >= 4000:
+            print("max number of fetchable trades for one user reached")
         prev_length = len(new_json)
     return [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids]
 
-# to change: parameters here (implement or not)
-def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0.1, max_trades=25):
+
+def trades_to_userhistory(trades_df, price_max=0.85, price_min=0.1, max_trades=25):
     '''
     Parameters: 
-    trades_csv: a csv of all the trades in the market (above a certain volume)
+    trades_csv: a pandas dataframe of all the trades in the market (above a certain volume)
     price_max: the maximum price for us to consider a trade 
         (a high price suggests less risk which makes insider trading less likely)
     price_min: the minimum price for us to consider a trade 
@@ -115,10 +118,66 @@ def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0.1, max_trades=
         mean potential winnings, total number of trades, number of trades before the flagged trade,
         number of trades after the flagged trade, and the user's 90th percentile potential winnings
     '''
+
+    if not isinstance(trades_df, pd.DataFrame):
+        raise TypeError("trades_df is not a pandas data frame")
+    
+    if 'size' in trades_df.columns:
+        if  trades_df['size'].dtype != np.float64:
+            raise TypeError("size column is not a numpy float")
+    else:
+        raise ValueError("data frame doesn't contain size column")
+    
+    if 'price' in trades_df.columns:
+        if  trades_df['price'].dtype != np.float64:
+            raise TypeError("price column is not a numpy float")
+    else:
+        raise ValueError("data frame doesn't contain price column")
+    
+    if 'timestamp' in trades_df.columns:
+        if  trades_df['timestamp'].dtype != np.int64:
+            raise TypeError("timestamp column is not expected type")
+    else:
+        raise ValueError("data frame doesn't contain timestamp column")
+    
+    if 'side' in trades_df.columns:
+        if  trades_df['side'].dtype != str:
+            raise TypeError("side column is not a string")
+    else:
+        raise ValueError("data frame doesn't contain side column")
+    
+    if 'proxyWallet' in trades_df.columns:
+        if trades_df['proxyWallet'].dtype != str:
+            raise TypeError("proxyWallet column is not a string")
+    else:
+        raise ValueError("data frame doesn't contain proxyWallet column")
+
+    # check that price boundaries are ints from 0 to 1
+
+    if isinstance(price_max, (int,float)):
+        if (price_max <= 0) or (price_max > 1):
+            raise ValueError("Invalid range for price_max")
+    else:
+        raise TypeError("Invalid type for price_max")
+    
+    if isinstance(price_min, (int,float)):
+        if (price_min < 0) or (price_min >= 1):
+            raise ValueError("Invalid range for price_min")
+    else:
+        raise TypeError("Invalid type for price_min")
+
+    # check that max trades isn't too big and is the right type
+
+    if isinstance(max_trades, int):
+        if max_trades > 200:
+            raise ValueError("max_trades is too big, limit is 200")
+    else:
+        raise TypeError("Invalid type for max_trades")
+    
     # creating a mask to filter for if a trade was included
-    trade_mask = [False]*len(trades_csv)
-    trades_csv['winnings'] = trades_csv['size'] - trades_csv['price']*trades_csv['size']
-    sorted_trades = trades_csv.sort_values(by='winnings',ascending=False)
+    trade_mask = [False]*len(trades_df)
+    trades_df['winnings'] = trades_df['size'] - trades_df['price']*trades_df['size']
+    sorted_trades = trades_df.sort_values(by='winnings',ascending=False)
     timestamp_max = max(sorted_trades['timestamp'])
     timestamp_min = min(sorted_trades['timestamp'])
     timestamp_diff = timestamp_max - timestamp_min
@@ -161,14 +220,18 @@ def trades_to_userhistory(trades_csv, price_max=0.85, price_min=0.1, max_trades=
         # we will stop at a certain point to avoid too much data
         if n_trades >= max_trades:
             break
-    trades_csv['trade_used'] = trade_mask
-    trades_filtered = trades_csv[trades_csv['trade_used']].copy()
+    trades_df['trade_used'] = trade_mask
+    trades_filtered = trades_df[trades_df['trade_used']].copy()
     trades_filtered['user_mean_winnings'] = user_mean_winnings
     trades_filtered['user_number_of_trades'] = user_sum_trades
     trades_filtered['user_trades_before_this_trade'] = user_num_before
     trades_filtered['user_trades_after_this_trade'] = user_num_after
     trades_filtered['user_90th_percentile_winnings'] = user_winnings_percentile
     trades_filtered.drop('trade_used', axis=1, inplace=True)
+    if len(trades_filtered) == 0:
+        print("no flagged trades")
+    if len(trades_filtered) < 10:
+        print("less than 10 trades found")
     print("complete")
     return trades_filtered
 
