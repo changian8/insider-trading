@@ -11,26 +11,36 @@
 </head>
 <body>
     <h1 id="header">Could we identify trades that looked like insider trading on Polymarket?</h1>
-    <h2 id="authors">Ian Chang, Jonathon Grothe, Aaron Kann, Josh Tseng</h2>
+    <h3 id="authors">Ian Chang, Jonathon Grothe, Aaron Kann, Josh Tseng</h3>
 
-    <header font-size="xxlarge">The Short Answer: No, Not Really or Yes, We Can</header>
+    <h2 id="shortanswer"><b>The Short Answer:</b> No, we did not, but there's still work to be done!</h2>
 
-    <p id="findings"> This is a paragraph where we will describe our conclusions and findings. 
-        Immediately, we will begin with a clear <b>Yes or No Answer</b> as to the question of did we find insider trading
-        to be widescale and easily identifiable by the features of the trade itself.  
-        We will then go on to describe the motivation behind the investigation, that Maduro trade
-        Secondly, we will lay out what we did on a high level, including describing the limiations of our research
-        in a clear and precise manor such that you don't have to understand technical details to know
-        why our results may be misleading.
-    </p>
-
-    <p id="disclaimers"> 
-        It is our official position that attempting to trade based upon this data is a bad idea.  <!-- <a href="#disclaimer-full">Here's why.</a> -->
+    <p id="findings"> 
+        <b>Our analysis did not find any evidence of insider trading on Polymarket,</b> but our analysis is very limited in scope and
+        we should not conclude that insider trading doesn't exist - just that we couldn't quite find the proof we wanted. 
+        <br><br>
+        To begin, we looked at the Maduro trade that went viral.  And to our credit, for this trade, we found that trades with 
+        the characteristics of the trade that went viral did win more often than they lost!
+        However, as the Maduro trade was the inspiration for our analysis anyway, this doesn't really prove
+        anything new, it just confirms what we already knew to be true, as it was this trade was the inspiration for our analysis in the first place.
+        <br><br>
+        After that, we looked at the Lady Gaga halftime show trade and the recent Iran strike trade.
+        And we found that the trades we flagged as suspicious lost more often than they won, in fact,
+        every single trade we flagged as suspicious lost! Embarrasing!
+        <br><br>
+        There are many flaws with our approach: the amount of trades was more limited than we anticipated due to the sheer size of the data,
+        there was an unexpected class imbalance as users who bought tended to buy the favorite position,
+        and we realized after the fact that the trade that we thought was insider trading was deleted from the website before we could analyze it.
+        Given more time, we would have liked to analyze more trades and more markets by finding a way to store all the data we need,
+        and implement live tracking using cloud compute as to not run into that pesky final issue. 
+        <br><br>
+        As an aside, it is our official position that attempting to trade based upon this data is a bad idea (and not just because we didn't find any evidence of insider trading).
+        <!-- <a href="#disclaimer-full">Here's why.</a> -->
     </p>
 
     <div id="buttons">
-        <button class="filter-button" data-filter="Maduro in U.S. custody by January 31?">Maduro</button>
-        <button class="filter-button active" data-filter="Will Lady Gaga perform during the Super Bowl LX halftime show?">Lady Gaga Halftime Show</button>
+        <button class="filter-button active" data-filter="Maduro in U.S. custody by January 31?">Maduro</button>
+        <button class="filter-button" data-filter="Will Lady Gaga perform during the Super Bowl LX halftime show?">Lady Gaga Halftime Show</button>
         <button class="filter-button" data-filter="US strikes Iran by February 28, 2026?"">Iran Strike</button>
     </div>
 
@@ -41,22 +51,52 @@
         <tbody id="dataBody"></tbody>
     </table>
 
-    <div id="graphs"></div>
+    <div id="chartsContainer"></div>
 
-    <p id="details">
-        In this section, we will go over the details that only someone who wants to replicate the project will want to know.
-        This includes exactly <i>how</i> we derived the features in the chart, a step above the high level explanation
-        that we will give up above the chart itself.
-    </p>
+    <div id="scorelogic">
+        <h3>How we determined the suspicion score</h3>
 
-    <p id="endnote">
-        Thank you for making it all the way to the bottom of the page, here's a
-        <i>link to the GitHub</i> if you'd like to continue our research!
-    </p>
+        For the trades shown here, we first filtered sorted the trades for each market by potential winnings, 
+        and went down the list selecting trades that passed our initial criteria, which were:
+        <ul>
+            <li>
+                The trade was a buy rather than a sell
+                <span style="font-style: italic;">(indicating a hope of making money in the future on this market)</span>
+            </li>
+            <li>
+                The price at the time the trade was made was not extreme
+                <span style="font-style: italic;">(indicating an uncertain market)</span>
+            </li>
+            <li>
+                The timestamp was in the earliest third of trades we accessed
+                <span style="font-style: italic;">(indicating a potential for interest earlier than other bettors)</span>
+            </li>
+        </ul>
+        
+        This ensured that we would flag a smaller set of trades that we were already a little suspicious of. 
+        This helped us simplify our website and avoid a daunting run time when we analyzed all of a user's trades.
+        <br><br>
+        Our next step was to look at the user's trades and use that to determine how that reflects on the trades we flagged.
+        We used three criteria to determine how suspicious a user's history was:
+        <ul>
+            <li>The number of trades the user has made</li>
+            <li>The number of trades the user made before this trade</li>
+            <li>How the potential winnings compared to the other trades the user has made</li>
+        </ul>
+        Fewer total trades and fewer trades before this trade indicate higher risk because they may have created the account 
+        just to place this single trade, which we believe is a strong indicator of insider trading.
+        Higher potential winnings indicated high risk because we believed that even a frequent polymarket user would bet 
+        more money if they were more confident in their position due to insider knowledge. 
+        <br><br>
+        These certainly are not the most thorough criteria, and it is unadvisable to draw any fervent conclusions from this report,
+        but we hope in spelling out our logic we can spark some musing on predictions, gambling, truth, and Polymarket 
+        (and we encourage you to take <a href="https://github.com/changian8/insider-trading">our code</a> and put your own logic on it!).
+    </div>
 
-    <hr>
 
     <!--
+    <hr>
+
     <div id="disclaimer-full">
         <h2> Why we do not advise using data from past bets to trade in the future</h2>
 
