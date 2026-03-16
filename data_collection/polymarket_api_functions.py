@@ -128,7 +128,7 @@ def sanity_check_trades_df(trades_df, price_max, price_min, max_trades):
     A boolean indicating if the trades dataframe is valid
     '''
     if not isinstance(trades_df, pd.DataFrame):
-        raise TypeError("trades_df is not a pandas data frame")
+        raise TypeError(f"trades_df is a {type(trades_df)} not a pandas data frame")
 
     if 'size' in trades_df.columns:
         if  trades_df['size'].dtype != np.float64:
