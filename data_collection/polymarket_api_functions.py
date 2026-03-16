@@ -141,20 +141,19 @@ def trades_to_userhistory(trades_df, price_max=0.85, price_min=0.1, max_trades=2
         raise ValueError("data frame doesn't contain timestamp column")
     
     #current typez; object
-    '''
+    
     if 'side' in trades_df.columns:
-        if  trades_df['side'].dtype != str:
+        if not (trades_df['side'].dtype == 'object' or pd.api.types.is_string_dtype(trades_df['side'])):
             raise TypeError("side column is not a string")
     else:
         raise ValueError("data frame doesn't contain side column")
     
     
     if 'proxyWallet' in trades_df.columns:
-        if trades_df['proxyWallet'].dtype != str:
+        if not (trades_df['proxyWallet'].dtype == 'object' or pd.api.types.is_string_dtype(trades_df['proxyWallet'])):
             raise TypeError("proxyWallet column is not a string")
     else:
         raise ValueError("data frame doesn't contain proxyWallet column")
-    '''
 
     # check that price boundaries are ints from 0 to 1
 
@@ -279,6 +278,14 @@ def analyze_history(final_trades_df):
     # logic for adding to insider score:
     # add number of trades before this one and number after to n_trades filtering
     # add 90th percentile volume to percentile
+
+    # check type of df
+    # check existence/types of:
+    # u_n_o_tr
+    # u_9_pc_w
+    # w
+    # u_m_w
+    # u_t_b_t_t
     insider_scores = []
     for index, row in final_trades_df.iterrows():
         insider_score = 'Low Risk'
