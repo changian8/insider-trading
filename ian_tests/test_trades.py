@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
-import requests
-import pandas as pd
+#import requests
+#import pandas as pd
 
 from data_collection.trades_api import get_trades
 
