@@ -4,7 +4,10 @@ const {
   clearDataTable,
   putJsonDataInTable,
   loadData,
-  DATABASE_NAME 
+  DATABASE_NAME,
+  FIRST_CATEGORY,
+  DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME,
+  DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME,
 } = require('./index.js')
 
 
@@ -169,3 +172,23 @@ describe('DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME', () => {
   })
 })
 
+/**
+ * Test to ensure there is only one button with the 'active' class
+ * and that this button's data-filter attribute equals FIRST_CATEGORY
+ */
+describe('filter button active class', () => {
+  beforeAll(() => {
+    // Load the HTML into the DOM
+    const fs = require('fs')
+    const path = require('path')
+    const html = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf8')
+    document.documentElement.innerHTML = html
+  })
+
+  it('should have only one button with the active class and it should have data-filter equal to FIRST_CATEGORY', () => {
+    const { FIRST_CATEGORY } = require('./index.js')
+    const activeButtons = document.querySelectorAll('#buttons .filter-button.active')
+    expect(activeButtons.length).toBe(1)
+    expect(activeButtons[0].getAttribute('data-filter')).toBe(FIRST_CATEGORY)
+  })
+})
