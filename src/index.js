@@ -206,6 +206,10 @@ const displayPriceHistoryChart = function (categoryFilter) {
   const googleSearchImg = document.createElement('img')
   googleSearchImg.src = `./charts/${googleSearchFilename}`
 
+  if (!priceHistoryFilename || !googleSearchFilename) {
+    throw new Error('No image exists at the path for the specified category filter')
+  }
+
   priceHistoryChart.appendChild(priceHistoryImg)
   priceHistoryChart.appendChild(googleSearchImg)
 }
@@ -220,9 +224,7 @@ const filterButtons = document.querySelectorAll('.filter-button')
 filterButtons.forEach((button) => {
   button.addEventListener('click', () => {
     const filter = button.getAttribute('data-filter')
-    // get rid of active class on all buttons
     filterButtons.forEach(btn => btn.classList.remove('active'))
-    // set the clicked button as active
     button.classList.add('active')
 
     clearDataTable()
@@ -236,5 +238,8 @@ module.exports = {
   clearDataTable,
   putJsonDataInTable,
   loadData,
+  displayPriceHistoryChart,
   DATABASE_NAME,
+  DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME,
+  DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME,
 }

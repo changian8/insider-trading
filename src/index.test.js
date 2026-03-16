@@ -9,25 +9,14 @@ const {
 
 
 /**
- * Tests the sortingByInsiderTradingSuspicionFunction function
- * 
- * Here's a list of all possible and edge cases we need to test:
+ * Tests the following cases for the sortingByInsiderTradingSuspicionFunction function:
  * 
  * ISTI are all strings - High Risk -> Medium Risk -> Low Risk -> all other strings if ISTI is a string
- * ISTI are all strings -> potential winnings serve as a tiebreaker if the string value is the same
- * 
+ * potential winnings serve as a tiebreaker if the string value is the same
  * ISTI are all numbers - descending order
- * ISTI are all numbers -> potential winnings serve as a tiebreaker if the number value is the same
- * 
  * ISTI are a mix of strings and numbers - strings first, then numbers if ISTI is a string
- * ISTI are a mix of strings and numbers -> potential winnings serve as a tiebreaker if the string value is the same
- * ISTI are a mix of strings and numbers -> potential winnings serve as a tiebreaker if the number value is the same
- * 
  * ISTI does not exist - sort by potential winnings descending
  * ISTI and potential winnings do not exist - return the same order
- * 
- * @param {Object[]} rows - The rows to sort
- * @returns {Object[]} - The sorted rows
  */
 describe('sortingByInsiderTradingSuspicionFunction', () => {
   it('should sort rows by Insider Trading Suspicion Index', () => {
@@ -108,19 +97,14 @@ describe('sortingByInsiderTradingSuspicionFunction', () => {
 })
 
 /**
- * Tests the toStringDollarValue function
- * 
- * Here's a list of all possible and edge cases we need to test:
- * 
+ * Tests the following cases for the toStringDollarValue function:
+
  * Positive numbers - add dollar sign, round to 2 decimal places, add comma every 3 digits
  * Negative numbers - add dollar sign, round to 2 decimal places, add comma every 3 digits
  * 0 - return $0.00
  * any number less than one - return $0.[the number with 2 decimal places]
+ * any number betweeen zero and negative one - return -$0.[the number with 2 decimal places]
  * No number - send back that same string
- *
- * 
- * @param {number} value - The value to convert
- * @returns {string} - The string dollar value
  */
 describe('toStringDollarValue', () => {
   it('should convert a positive number to a string dollar value', () => {
@@ -147,6 +131,12 @@ describe('toStringDollarValue', () => {
     const result = toStringDollarValue(value)
     expect(result).toEqual(expected)
   })
+  it('should convert a number between zero and negative one to a string dollar value', () => {
+    const value = -0.123456789
+    const expected = '-$0.12'
+    const result = toStringDollarValue(value)
+    expect(result).toEqual(expected)
+  })
   it('should send back the same string if no number is provided', () => {
     const value = 'not a number'
     const expected = 'not a number'
@@ -155,9 +145,27 @@ describe('toStringDollarValue', () => {
   })
 })
 
+/**
+ * Makes sure we are sending the real data (JSON) and not the fake data (CSV)
+ */
 describe('DATABASE_NAME', () => {
   it('should be a JSON and not a CSV', () => {
     expect(DATABASE_NAME).toMatch(/\.json$/)
     expect(DATABASE_NAME).not.toMatch(/\.csv$/)
   })
 })
+
+/**
+ * Makes sure there is a valid path for each value for the chart filename dictionaries
+ */
+describe('DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME', () => {
+  it('should be a dictionary with valid paths for each value', () => {
+    expect(DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME).toBeDefined()
+    expect(DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME).toBeDefined()
+    for (const key in DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME) {
+      expect(DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME[key]).toBeDefined()
+      expect(DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME[key]).toBeDefined()
+    }
+  })
+})
+
