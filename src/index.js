@@ -19,9 +19,9 @@ const DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME = {
 }
 
 const DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME = {
-  'Maduro in U.S. custody by January 31?': 'maduro_capture_pricehistory.png',
-  'Will Lady Gaga perform during the Super Bowl LX halftime show?': 'halftime_guest_pricehistory.png',
-  'US strikes Iran by February 28, 2026?': 'iran_strike_pricehistory.png',
+  'Maduro in U.S. custody by January 31?': 'Venezuela_googlesearch.png',
+  'Will Lady Gaga perform during the Super Bowl LX halftime show?': 'Superbowl_googlesearch.png',
+  'US strikes Iran by February 28, 2026?': 'Iran_googlesearch.png',
 }
 
 const isDollarValueCategory = ['total_trade_value', 'winnings', 'user_mean_winnings', 'user_90th_percentile_winnings', 'size', 'price']
