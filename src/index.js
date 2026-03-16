@@ -1,16 +1,30 @@
 const JSON_HEADERS_TO_PAGE_HEADERS = {
-  title: 'Event Name',
+  price: 'Cost Per Share at Purchase',
+  timestamp: 'Purchase Time',
   total_trade_value: 'Total Trade Value',
-  winnings: 'Winnings',
-  user_mean_winnings: 'User Mean Winnings',
-  user_number_of_trades: 'User Number of Trades',
+  size: 'Potential Winnings',
   user_trades_before_this_trade: 'User Trades Before This Trade',
   user_trades_after_this_trade: 'User Trades After This Trade',
+  winnings: 'User Total Winnings',
+  user_mean_winnings: 'User Mean Winnings',
   user_90th_percentile_winnings: 'User 90th Percentile Winnings',
+  outcome: 'Winner?',
   Insider_scores: 'Insider Scores',
 }
 
-const isDollarValueCategory = ['total_trade_value', 'winnings', 'user_mean_winnings', 'user_90th_percentile_winnings']
+const DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME = {
+  'Maduro in U.S. custody by January 31?': 'maduro_capture_pricehistory.png',
+  'Will Lady Gaga perform during the Super Bowl LX halftime show?': 'halftime_guest_pricehistory.png',
+  'US strikes Iran by February 28, 2026?': 'iran_strike_pricehistory.png',
+}
+
+const DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME = {
+  'Maduro in U.S. custody by January 31?': 'Venezuela_googlesearch.png',
+  'Will Lady Gaga perform during the Super Bowl LX halftime show?': 'Superbowl_googlesearch.png',
+  'US strikes Iran by February 28, 2026?': 'Iran_googlesearch.png',
+}
+
+const isDollarValueCategory = ['total_trade_value', 'winnings', 'user_mean_winnings', 'user_90th_percentile_winnings', 'size', 'price']
 const DATABASE_NAME = 'trades_for_website.json'
 const MAXIMUM_ROWS_TO_DISPLAY = 8
 const FIRST_CATEGORY = 'Maduro in U.S. custody by January 31?'
@@ -36,7 +50,7 @@ const clearDataTable = function () {
 /**
  * Sorts the rows by the Insider Trading Suspicion Index
  * "High Risk" -> "Medium Risk" -> "Low Risk" -> all other strings if ISTI is a string
- * If tied, sort by the winnings of the trade
+ * If tied, sort by the total potential winnings of the trade
  *
  * If ISTI is an integer, sort by the integer value
  *
@@ -44,7 +58,7 @@ const clearDataTable = function () {
  * @param {Object} b - The second trade object to compare
  * @returns {number} - The difference between the Insider Trading Suspicion Index of the two rows
  */
-const sortRowsByInsiderTradingSuspicion = function (a, b) {
+const sortingByInsiderTradingSuspicionFunction = function (a, b) {
   // Helper function to determine "risk" order for string ISTI
   function getRiskOrder(isti) {
     if (typeof isti === 'string') {
@@ -64,8 +78,8 @@ const sortRowsByInsiderTradingSuspicion = function (a, b) {
   // If both are numbers, sort numerically (descending)
   if (typeof aIsti === 'number' && typeof bIsti === 'number') {
     if (bIsti !== aIsti) return bIsti - aIsti
-    // If tied, sort by winnings descending
-    return (b['winnings'] || 0) - (a['winnings'] || 0)
+    // If tied, sort by total trade value descending
+    return (b['size'] || 0) - (a['size'] || 0)
   }
 
   // If both are strings
@@ -75,15 +89,15 @@ const sortRowsByInsiderTradingSuspicion = function (a, b) {
 
     if (aOrder !== bOrder) return aOrder - bOrder
     // If tied, sort by winnings descending
-    return (b['winnings'] || 0) - (a['winnings'] || 0)
+    return (b['size'] || 0) - (a['size'] || 0)
   }
 
   // If one is string and other is number, numbers first
-  if (typeof aIsti === 'number' && typeof bIsti !== 'number') return -1
-  if (typeof bIsti === 'number' && typeof aIsti !== 'number') return 1
+  if (typeof aIsti === 'number' && typeof bIsti !== 'number') return 1
+  if (typeof bIsti === 'number' && typeof aIsti !== 'number') return -1
 
   // Fallback: sort by winnings descending
-  return (b['winnings'] || 0) - (a['winnings'] || 0)
+  return (b['size'] || 0) - (a['size'] || 0)
 }
 
 /**
@@ -94,7 +108,12 @@ const sortRowsByInsiderTradingSuspicion = function (a, b) {
  * @returns {string} - The string dollar value
  */
 const toStringDollarValue = function (value) {
-  return '$' + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  if (typeof value !== 'number') return value
+
+  const sign = value < 0 ? '-' : ''
+  const absoluteValue = Math.abs(value)
+  const formattedNumber = absoluteValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return `${sign}$${formattedNumber}`
 }
 
 /**
@@ -105,7 +124,6 @@ const toStringDollarValue = function (value) {
  * @param {string} categoryFilter - The category to filter the rows by
  */
 const putJsonDataInTable = function (jsonData, categoryFilter) {
-  console.log(jsonData)
   const headerRow = document.getElementById('headerRow')
   const dataBody = document.getElementById('dataBody')
 
@@ -125,13 +143,22 @@ const putJsonDataInTable = function (jsonData, categoryFilter) {
   const filteredRows = jsonData
     .filter(row => row['title'] && row['title'].trim() === categoryFilter.trim())
     .sort((a, b) => {
-      return sortRowsByInsiderTradingSuspicion(a, b)
+      return sortingByInsiderTradingSuspicionFunction(a, b)
     })
 
   // Display rows up to MAXIMUM_ROWS_TO_DISPLAY
   for (let i = 0; i < Math.min(filteredRows.length, MAXIMUM_ROWS_TO_DISPLAY); i++) {
     const row = filteredRows[i]
     const tr = document.createElement('tr')
+
+    // if outcome is Yes, add a green background to the row
+    if (row['outcome'] === 'Yes') {
+      tr.classList.add('winner-row')
+    }
+    else if (row['outcome'] === 'No') {
+      tr.classList.add('loser-row')
+    }
+
     headers.forEach((header) => {
       if (JSON_HEADERS_TO_PAGE_HEADERS[header.trim()]) {
         const td = document.createElement('td')
@@ -155,8 +182,36 @@ const loadData = function (categoryFilter) {
       .then(response => response.json())
       .then((jsonData) => {
         putJsonDataInTable(jsonData, categoryFilter)
+        displayPriceHistoryChart(categoryFilter)
       })
   }
+}
+
+/**
+ * Displays the price history and google search charts for the specified category
+ *
+ * @param {string} categoryFilter - The category to display the charts for
+ */
+const displayPriceHistoryChart = function (categoryFilter) {
+  const priceHistoryChart = document.getElementById('chartsContainer')
+  while (priceHistoryChart.firstChild) {
+    priceHistoryChart.removeChild(priceHistoryChart.firstChild)
+  }
+
+  const priceHistoryFilename = DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME[categoryFilter]
+  const priceHistoryImg = document.createElement('img')
+  priceHistoryImg.src = `./charts/${priceHistoryFilename}`
+
+  const googleSearchFilename = DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME[categoryFilter]
+  const googleSearchImg = document.createElement('img')
+  googleSearchImg.src = `./charts/${googleSearchFilename}`
+
+  if (!priceHistoryFilename || !googleSearchFilename) {
+    throw new Error('No image exists at the path for the specified category filter')
+  }
+
+  priceHistoryChart.appendChild(priceHistoryImg)
+  priceHistoryChart.appendChild(googleSearchImg)
 }
 
 // On page load, we want to load the first category of data by default
@@ -169,10 +224,7 @@ const filterButtons = document.querySelectorAll('.filter-button')
 filterButtons.forEach((button) => {
   button.addEventListener('click', () => {
     const filter = button.getAttribute('data-filter')
-    console.log(`Filter button clicked: ${filter}`)
-    // get rid of active class on all buttons
     filterButtons.forEach(btn => btn.classList.remove('active'))
-    // set the clicked button as active
     button.classList.add('active')
 
     clearDataTable()
@@ -181,10 +233,14 @@ filterButtons.forEach((button) => {
 })
 
 module.exports = {
-  sortRowsByInsiderTradingSuspicion,
+  sortingByInsiderTradingSuspicionFunction,
   toStringDollarValue,
   clearDataTable,
   putJsonDataInTable,
   loadData,
+  displayPriceHistoryChart,
   DATABASE_NAME,
+  FIRST_CATEGORY,
+  DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME,
+  DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME,
 }
