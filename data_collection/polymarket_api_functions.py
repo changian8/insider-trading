@@ -21,7 +21,6 @@ def date_to_unix(date):
     date_unix = int(date_dt.timestamp())
     return date_unix
 
-
 def unix_to_date(unix):
     '''
     Takes in a unit timestamp and returns the date in m/d/y/h:m:s
@@ -29,7 +28,6 @@ def unix_to_date(unix):
     unix_dt = datetime.fromtimestamp(unix)
     mdy = unix_dt.strftime("%m/%d/%Y/%H:%M:%S")
     return mdy
-
 
 def user_history(user_id,limit=1000):
     '''
@@ -45,39 +43,44 @@ def user_history(user_id,limit=1000):
     if not isinstance(user_id, str):
         raise TypeError("user_id is not a string")
     if not isinstance(limit, int):
-        raise(TypeError("limit is not an int"))
+        raise TypeError("limit is not an int")
     user_url = f"https://data-api.polymarket.com/trades?user={user_id}&limit={limit}"
     user_trades = requests.get(user_url, timeout=(3,5))
     user_trades_json = user_trades.json()
     user_check = user_trades_json[0]['proxyWallet']
     # using lists so we can store data from multiple queries
-    sides = []
-    sizes = []
-    prices = []
-    potential_winnings = []
-    timestamps = []
-    outcomes = []
-    slugs = []
-    condition_ids = []
+    user_information = {
+        'sides': [],
+        'sizes': [],
+        'prices': [],
+        'potential_winnings': [],
+        'timestamps': [],
+        'outcomes': [],
+        'slugs': [],
+        'condition_ids': []
+    }
     if user_check != user_id:
         print("user either has not traded at all or does not exist")
-        return [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids]
+        return to_old_format(user_information)
     for item in user_trades_json:
         potensh_winnings = item['size'] - item['price']*item['size']
-        sides.append(item['side'])
-        sizes.append(item['size'])
-        prices.append(item['price'])
-        potential_winnings.append(potensh_winnings)
-        timestamps.append(item['timestamp'])
-        outcomes.append(item['outcome'])
-        slugs.append(item['slug'])
-        condition_ids.append(item['conditionId'])
+        user_information['sides'].append(item['side'])
+        user_information['sizes'].append(item['size'])
+        user_information['prices'].append(item['price'])
+        user_information['potential_winnings'].append(potensh_winnings)
+        user_information['timestamps'].append(item['timestamp'])
+        user_information['outcomes'].append(item['outcome'])
+        user_information['slugs'].append(item['slug'])
+        user_information['condition_ids'].append(item['conditionId'])
     prev_length = len(user_trades_json)
     offset = limit
     time.sleep(5)
     while prev_length == limit:
         print("user has traded more than limit")
-        new_url = f"https://data-api.polymarket.com/trades?user={user_id}&limit={limit}&offset={offset}"
+        new_url = (
+            "https://data-api.polymarket.com/trades"
+            f"?user={user_id}&limit={limit}&offset={offset}"
+        )
         new_trades = requests.get(new_url, timeout=(3,5))
         new_json = new_trades.json()
         for new_item in new_json:
@@ -88,19 +91,83 @@ def user_history(user_id,limit=1000):
                 # 2: they probably aren't an insider trader
                 # probably related to the max offset being 4000...
                 continue
-            sides.append(new_item['side'])
-            sizes.append(new_item['size'])
-            prices.append(new_item['price'])
-            timestamps.append(new_item['timestamp'])
-            outcomes.append(new_item['outcome'])
-            slugs.append(new_item['slug'])
-            condition_ids.append(new_item['conditionId'])
+            user_information['sides'].append(new_item['side'])
+            user_information['sizes'].append(new_item['size'])
+            user_information['prices'].append(new_item['price'])
+            user_information['timestamps'].append(new_item['timestamp'])
+            user_information['outcomes'].append(new_item['outcome'])
+            user_information['slugs'].append(new_item['slug'])
+            user_information['condition_ids'].append(new_item['conditionId'])
         offset += limit # could add check here to prevent error
         if offset >= 4000:
             print("max number of fetchable trades for one user reached")
         prev_length = len(new_json)
-    return [sides,sizes,prices,potential_winnings,timestamps,outcomes,slugs,condition_ids]
+    return to_old_format(user_information)
 
+def to_old_format(user_information):
+    '''
+    Converts the user information dictionary to the old format
+    '''
+    return [
+        user_information['sides'],
+        user_information['sizes'],
+        user_information['prices'],
+        user_information['potential_winnings'],
+        user_information['timestamps'],
+        user_information['outcomes'],
+        user_information['slugs'],
+        user_information['condition_ids']
+    ]
+
+def sanity_check_trades_df(trades_df, price_max, price_min, max_trades):
+    '''
+    Parameters:
+    trades_df: a pandas dataframe of all the trades in the market (above a certain volume)
+    Returns:
+    A boolean indicating if the trades dataframe is valid
+    '''
+    if not isinstance(trades_df, pd.DataFrame):
+        raise TypeError("trades_df is not a pandas data frame")
+
+    if 'size' in trades_df.columns:
+        if  trades_df['size'].dtype != np.float64:
+            raise TypeError("size column is not a numpy float")
+    else:
+        raise ValueError("data frame doesn't contain size column")
+
+    if 'price' in trades_df.columns:
+        if  trades_df['price'].dtype != np.float64:
+            raise TypeError("price column is not a numpy float")
+    else:
+        raise ValueError("data frame doesn't contain price column")
+
+    if 'timestamp' in trades_df.columns:
+        if  trades_df['timestamp'].dtype != np.int64:
+            raise TypeError("timestamp column is not expected type")
+    else:
+        raise ValueError("data frame doesn't contain timestamp column")
+
+    # check that price boundaries are ints from 0 to 1
+    if isinstance(price_max, (int,float)):
+        if (price_max <= 0) or (price_max > 1):
+            raise ValueError("Invalid range for price_max")
+    else:
+        raise TypeError("Invalid type for price_max")
+
+    if isinstance(price_min, (int,float)):
+        if (price_min < 0) or (price_min >= 1):
+            raise ValueError("Invalid range for price_min")
+    else:
+        raise TypeError("Invalid type for price_min")
+
+    # check that max trades isn't too big and is the right type
+
+    if isinstance(max_trades, int):
+        if max_trades > 200:
+            raise ValueError("max_trades is too big, limit is 200")
+    else:
+        raise TypeError("Invalid type for max_trades")
+    return True
 
 def trades_to_userhistory(trades_df, price_max=0.85, price_min=0.1, max_trades=25):
     '''
@@ -118,66 +185,8 @@ def trades_to_userhistory(trades_df, price_max=0.85, price_min=0.1, max_trades=2
         mean potential winnings, total number of trades, number of trades before the flagged trade,
         number of trades after the flagged trade, and the user's 90th percentile potential winnings
     '''
+    sanity_check_trades_df(trades_df, price_max, price_min, max_trades)
 
-    if not isinstance(trades_df, pd.DataFrame):
-        raise TypeError("trades_df is not a pandas data frame")
-    
-    if 'size' in trades_df.columns:
-        if  trades_df['size'].dtype != np.float64:
-            raise TypeError("size column is not a numpy float")
-    else:
-        raise ValueError("data frame doesn't contain size column")
-    
-    if 'price' in trades_df.columns:
-        if  trades_df['price'].dtype != np.float64:
-            raise TypeError("price column is not a numpy float")
-    else:
-        raise ValueError("data frame doesn't contain price column")
-    
-    if 'timestamp' in trades_df.columns:
-        if  trades_df['timestamp'].dtype != np.int64:
-            raise TypeError("timestamp column is not expected type")
-    else:
-        raise ValueError("data frame doesn't contain timestamp column")
-    
-    #current typez; object
-    '''
-    if 'side' in trades_df.columns:
-        if  trades_df['side'].dtype != str:
-            raise TypeError("side column is not a string")
-    else:
-        raise ValueError("data frame doesn't contain side column")
-    
-    
-    if 'proxyWallet' in trades_df.columns:
-        if trades_df['proxyWallet'].dtype != str:
-            raise TypeError("proxyWallet column is not a string")
-    else:
-        raise ValueError("data frame doesn't contain proxyWallet column")
-    '''
-
-    # check that price boundaries are ints from 0 to 1
-
-    if isinstance(price_max, (int,float)):
-        if (price_max <= 0) or (price_max > 1):
-            raise ValueError("Invalid range for price_max")
-    else:
-        raise TypeError("Invalid type for price_max")
-    
-    if isinstance(price_min, (int,float)):
-        if (price_min < 0) or (price_min >= 1):
-            raise ValueError("Invalid range for price_min")
-    else:
-        raise TypeError("Invalid type for price_min")
-
-    # check that max trades isn't too big and is the right type
-
-    if isinstance(max_trades, int):
-        if max_trades > 200:
-            raise ValueError("max_trades is too big, limit is 200")
-    else:
-        raise TypeError("Invalid type for max_trades")
-    
     # creating a mask to filter for if a trade was included
     trade_mask = [False]*len(trades_df)
     trades_df['winnings'] = trades_df['size'] - trades_df['price']*trades_df['size']
@@ -200,7 +209,11 @@ def trades_to_userhistory(trades_df, price_max=0.85, price_min=0.1, max_trades=2
         user = row['proxyWallet']
         price = row['price']
         timestamp = row['timestamp']
-        if (buy == 'BUY') and (price_min < price < price_max) and (timestamp <= timestamp_min + timestamp_third):
+        if (
+            buy == 'BUY'
+            and price_min < price < price_max
+            and timestamp <= (timestamp_min + timestamp_third)
+        ):
             index_used_trades.append(index)
             user_list.append(user)
             n_trades += 1
@@ -249,7 +262,7 @@ def plot_price_history(trades_csv,market_name):
     prices_updated = []
     sorted_trades = trades_csv.sort_values(by='timestamp')
     timestamp_list =[]
-    for index, row in sorted_trades.iterrows():
+    for _, row in sorted_trades.iterrows():
         timestamp = row['timestamp']
         dt_object = datetime.fromtimestamp(timestamp)
         timestamp_list.append(dt_object)
@@ -266,7 +279,6 @@ def plot_price_history(trades_csv,market_name):
     plt.show()
     return 'Success'
 
-
 def analyze_history(final_trades_df):
     '''
     Iterates through the final trades csv and returns a list evaluating each trade
@@ -280,7 +292,7 @@ def analyze_history(final_trades_df):
     # add number of trades before this one and number after to n_trades filtering
     # add 90th percentile volume to percentile
     insider_scores = []
-    for index, row in final_trades_df.iterrows():
+    for _, row in final_trades_df.iterrows():
         insider_score = 'Low Risk'
         user_trades = row['user_number_of_trades']
         percentile = row['user_90th_percentile_winnings']
