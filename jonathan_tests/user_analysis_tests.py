@@ -65,15 +65,109 @@ class HistoryAnalysisTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             paf.trades_to_userhistory(halftime_size_test)
 
+    def test_price_column(self):
+        halftime_price_test = pd.read_csv("data_collection/sb_performance_trades.csv")
+        halftime_no_price = halftime_price_test.rename(columns = {'price':'not_price'})
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_no_price)
+        price_wrong_type = ['b']*len(halftime_price_test)
+        halftime_price_test['price'] = price_wrong_type
+        with self.assertRaises(TypeError):
+            paf.trades_to_userhistory(halftime_price_test)
+    
+    def test_timestamp_column(self):
+        halftime_ts_test = pd.read_csv("data_collection/sb_performance_trades.csv")
+        halftime_no_ts = halftime_ts_test.rename(columns = {'timestamp':'not_timestamp'})
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_no_ts)
+        ts_wrong_type = ['c']*len(halftime_ts_test)
+        halftime_ts_test['timestamp'] = ts_wrong_type
+        with self.assertRaises(TypeError):
+            paf.trades_to_userhistory(halftime_ts_test)
+
+    def test_side_column(self):
+        halftime_side_test = pd.read_csv("data_collection/sb_performance_trades.csv")
+        halftime_no_side = halftime_side_test.rename(columns = {'side':'not_side'})
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_no_side)
+        side_wrong_type = [1]*len(halftime_side_test)
+        halftime_side_test['side'] = side_wrong_type
+        with self.assertRaises(TypeError):
+            paf.trades_to_userhistory(halftime_side_test)
         
-    # and requirements of the df 
-    # and parameter edge cases
-    # check simple normal example - one where we break and one where we don't ?
-    # check example where no trades are flagged
-    # could try tying potential winnings on the last flagged trade and seeing what gets chosen ?
-    # doesn't really matter to me because it will just be ordered by whatever it was ordered by before sorting by value (timestamp)
-    # could try for a user with very few trades so 90th percentile doesn't make sense ?
-    # but it still is ok it will just only be their biggest trade flagging it (will still work for us roughly)
+    def test_proxyWallet_column(self):
+        halftime_pw_test = pd.read_csv("data_collection/sb_performance_trades.csv")
+        halftime_no_pw = halftime_pw_test.rename(columns = {'proxyWallet':'not_proxyWallet'})
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_no_pw)
+        pw_wrong_type = [1]*len(halftime_pw_test)
+        halftime_pw_test['proxyWallet'] = pw_wrong_type
+        with self.assertRaises(TypeError):
+            paf.trades_to_userhistory(halftime_pw_test)
+
+    def test_max_trends(self):
+        halftime_trades_test = pd.read_csv("data_collection/sb_performance_trades.csv")
+        max = "as many trades as possible >:)"
+        with self.assertRaises(TypeError):
+            paf.trades_to_userhistory(halftime_trades_test, max_trades=max)
+        max = 250
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_trades_test, max_trades=max)
+    
+    def test_price_min(self):
+        halftime_pmin_test = pd.read_csv("data_collection/sb_performance_trades.csv")
+        min = "nothing"
+        with self.assertRaises(TypeError):
+            paf.trades_to_userhistory(halftime_pmin_test, price_min=min)
+        min = -1
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_pmin_test, price_min=min)
+        min = 10
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_pmin_test, price_min=min)
+        min = 1
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_pmin_test, price_min=min)
+
+    def test_price_max(self):
+        halftime_pmax_test = pd.read_csv("data_collection/sb_performance_trades.csv")
+        max = "nothing"
+        with self.assertRaises(TypeError):
+            paf.trades_to_userhistory(halftime_pmax_test, price_max=max)
+        max = 10
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_pmax_test, price_max=max)
+        max = -1
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_pmax_test, price_max=max)
+        max = 0
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_pmax_test, price_max=max)
+
+    def test_empty_df(self):
+        empty_df = pd.read_csv("jonathan_tests/test_empty_trades_df.csv")
+        with self.assertRaises(TypeError):
+            paf.trades_to_userhistory(empty_df)
+       
+
+    def test_no_flagged(self):
+        empty_df = pd.read_csv("jonathan_tests/test_empty_trades_df.csv")
+        non_sus_trade  = ['test_user','BUY','condid_ex',1,0.99,1770429543,'title_ex','slug_ex','eventslug_ex','Yes',0,'test_name',0.99]
+        empty_df.loc[0] = non_sus_trade
+        empty_return = paf.trades_to_userhistory(non_sus_trade)
+        empty_copy = empty_df.copy()
+        empty_copy['user_mean_winnings'] = None
+        empty_copy['user_number_of_trades'] = None
+        empty_copy['user_trades_before_this_trade'] = None
+        empty_copy['user_trades_after_this_trade'] = None
+        empty_copy['user_90th_percentile_winnings'] = None
+        self.assertEqual(empty_return,empty_copy)
+
+    def test_bigger_df(self):
+        halftime_analysis_test = pd.read_csv("data_collection/sb_performance_trades.csv")
+        halftime_flagged = paf.trades_to_userhistory(halftime_analysis_test)
+        halftime_expected = pd.read_csv("jonathan_tests/halftime_test.csv")
+        self.assertEqual(halftime_flagged,halftime_expected)
 
     # plot price history tests:
 

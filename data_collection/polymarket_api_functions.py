@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
+import json
 
 # Helper functions
 
@@ -146,6 +147,19 @@ def sanity_check_trades_df(trades_df, price_max, price_min, max_trades):
             raise TypeError("timestamp column is not expected type")
     else:
         raise ValueError("data frame doesn't contain timestamp column")
+
+    if 'side' in trades_df.columns:
+        if not (trades_df['side'].dtype == 'object' or pd.api.types.is_string_dtype(trades_df['side'])):
+            raise TypeError("side column is not a string")
+    else:
+        raise ValueError("data frame doesn't contain side column")
+    
+    
+    if 'proxyWallet' in trades_df.columns:
+        if not (trades_df['proxyWallet'].dtype == 'object' or pd.api.types.is_string_dtype(trades_df['proxyWallet'])):
+            raise TypeError("proxyWallet column is not a string")
+    else:
+        raise ValueError("data frame doesn't contain proxyWallet column")
 
     # check that price boundaries are ints from 0 to 1
     if isinstance(price_max, (int,float)):
@@ -291,6 +305,14 @@ def analyze_history(final_trades_df):
     # logic for adding to insider score:
     # add number of trades before this one and number after to n_trades filtering
     # add 90th percentile volume to percentile
+
+    # check type of df
+    # check existence/types of:
+    # u_n_o_tr
+    # u_9_pc_w
+    # w
+    # u_m_w
+    # u_t_b_t_t
     insider_scores = []
     for _, row in final_trades_df.iterrows():
         insider_score = 'Low Risk'
@@ -312,3 +334,29 @@ def analyze_history(final_trades_df):
                 insider_score = 'Medium Risk'
         insider_scores.append(insider_score)
     return insider_scores
+
+
+# Plotting
+def get_clobs(slug_list):
+    '''
+    Takes in a list of slugs and returns the clob ids in a list of lists
+    '''
+    clob_list = []
+    for slug in slug_list: 
+        url = f"https://gamma-api.polymarket.com/markets/slug/{slug}"
+        response = requests.get(url)
+        response_json = response.json()
+        clob_list.append(response_json['clobTokenIds'])
+    return clob_list
+
+def price_at_time(clob,starttime,endtime):
+    '''
+    clob: the market clob
+    endtime: last trade in our csv
+    interval: the interval we are interested - distance in both directions from time
+    returns the price history over a specified interval around a time of interest
+    '''
+    history_url = f"https://clob.polymarket.com/prices-history?market={clob}&startTs={starttime}&endTs={endtime}"
+    history = requests.get(history_url)
+    history_json = history.json()
+    print(history_json)
