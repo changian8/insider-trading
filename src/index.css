@@ -18,15 +18,16 @@ body {
     
 }
 
-p, h5 {
+p, h5, #scorelogic {
     max-width: 800px;
     margin: 40px auto;
     text-align: left; 
 }
 
-#disclaimers {
-    text-align: center;
-    margin-bottom: 8px;
+#scorelogic ul, li {
+    list-style-type: disc;
+    margin-left: 20px;
+    text-align: left !important;
 }
 
 table {
@@ -85,7 +86,7 @@ tr:nth-child(even) {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    align-items: center;
+    align-items: stretch;
     margin-top: 32px;
     margin-bottom: 8px;
     width: 100%;
@@ -93,11 +94,14 @@ tr:nth-child(even) {
     margin-left: auto;
     margin-right: auto;
     gap: 24px;
+    height: 400px; /* Set a consistent height for the container and images */
 }
 
 #chartsContainer img {
-    flex: 1 1 0;
+    height: 100%;
+    width: auto;
     max-width: 49%;
-    height: auto;
     object-fit: contain;
+    /* remove any default vertical alignment */
+    display: block;
 }
