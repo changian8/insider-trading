@@ -1,7 +1,11 @@
 '''
-The module pulls data from the Google trend using pytrend API 
+The module pulls data from the Google trend using pytrend API and
+functions for visualizing Google Trends data 
+against YouTube search interest.
+
 '''
 
+import os
 from pytrends.request import TrendReq
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -59,13 +63,7 @@ def get_trend(time_range, key_words, location):
         print(f"Request failed: {err}")
 
 
-"""
-This module contains functions for visualizing Google Trends data 
-against YouTube search interest.
-"""
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
+
 
 def plot_trends(csv_filename, incident_date_str):
     """
@@ -123,22 +121,23 @@ def plot_trends(csv_filename, incident_date_str):
     plt.show()
 
 
-time = '2026-02-01 2026-02-15'
-key_words = ['Superbowl', 'Superbowl halftime', 'bad bunny','youtube']
-geo = 'US'
-get_trend(time, key_words, geo)
-plot_trends('Superbowl.csv', '2026-02-08')
+if __name__ == '__main__':
+    time = '2026-02-01 2026-02-15'
+    key_words = ['Superbowl', 'Superbowl halftime', 'bad bunny','youtube']
+    geo = 'US'
+    get_trend(time, key_words, geo)
+    plot_trends('Superbowl.csv', '2026-02-08')
 
 
-time = '2025-12-25 2026-01-10'
-key_words = ['Venezuela', 'Venezuela President', 'youtube']
-geo = 'US'
-get_trend(time, key_words, geo)
-plot_trends('Venezuela.csv', '2026-01-03')
+    time = '2025-12-25 2026-01-10'
+    key_words = ['Venezuela', 'Venezuela President', 'youtube']
+    geo = 'US'
+    get_trend(time, key_words, geo)
+    plot_trends('Venezuela.csv', '2026-01-03')
 
 
-time = '2026-02-21 2026-03-08'
-key_words = ['Iran', 'US strikes Iran', 'US invades Iran', 'US bombs Iran','youtube']
-geo = 'US'
-get_trend(time, key_words, geo)
-plot_trends('Iran.csv', '2026-02-28')
+    time = '2026-02-21 2026-03-08'
+    key_words = ['Iran', 'US strikes Iran', 'US invades Iran', 'US bombs Iran','youtube']
+    geo = 'US'
+    get_trend(time, key_words, geo)
+    plot_trends('Iran.csv', '2026-02-28')
