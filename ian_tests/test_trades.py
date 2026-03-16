@@ -3,7 +3,7 @@ from unittest.mock import patch, Mock
 import requests
 import pandas as pd
 
-from trades_api import get_trades
+from data_collection.trades_api import get_trades
 
 
 class MockResponse:
