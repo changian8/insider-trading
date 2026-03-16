@@ -194,20 +194,22 @@ const loadData = function (categoryFilter) {
  */
 const displayPriceHistoryChart = function (categoryFilter) {
   const priceHistoryChart = document.getElementById('chartsContainer')
-  const priceHistoryFilename = DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME[categoryFilter]
-  const googleSearchFilename = DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME[categoryFilter]
-  const priceHistoryImg = document.createElement('img')
-  priceHistoryImg.src = `./charts/${priceHistoryFilename}`
-  const googleSearchImg = document.createElement('img')
-  googleSearchImg.src = `./charts/${googleSearchFilename}`
-  // delete all children of priceHistoryChart
   while (priceHistoryChart.firstChild) {
     priceHistoryChart.removeChild(priceHistoryChart.firstChild)
   }
-  // append the price history and google search charts to the priceHistoryChart
+
+  const priceHistoryFilename = DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME[categoryFilter]
+  const priceHistoryImg = document.createElement('img')
+  priceHistoryImg.src = `./charts/${priceHistoryFilename}`
+
+  const googleSearchFilename = DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME[categoryFilter]
+  const googleSearchImg = document.createElement('img')
+  googleSearchImg.src = `./charts/${googleSearchFilename}`
+
   priceHistoryChart.appendChild(priceHistoryImg)
   priceHistoryChart.appendChild(googleSearchImg)
 }
+
 // On page load, we want to load the first category of data by default
 document.addEventListener('DOMContentLoaded', () => {
   loadData(FIRST_CATEGORY)
