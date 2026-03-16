@@ -42,6 +42,16 @@ alternatives in our [tech review](docs\technology-review\technology_review.md).
 ## Running Our Code
 
 ### Backend (Python)
+To setup the yml and dependencies, run the following:
+```
+conda env create -f environment.yml
+```
+
+and then 
+```
+pip install -r requirements.txt
+```
+This should install all needed dependencies and packages to successfully reproduce all results
 
 ### Frontend (HTML/JSS/CS)
 The frontend itself has no dependancies, however there are dev dependancies if you wanted to
