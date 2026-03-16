@@ -1,19 +1,19 @@
-const { 
+const {
   sortingByInsiderTradingSuspicionFunction,
   toStringDollarValue,
-  clearDataTable,
-  putJsonDataInTable,
-  loadData,
+  unixTimestampToDate,
+  // clearDataTable,
+  // putJsonDataInTable,
+  // loadData,
   DATABASE_NAME,
-  FIRST_CATEGORY,
+  // FIRST_CATEGORY,
   DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME,
   DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME,
 } = require('./index.js')
 
-
 /**
  * Tests the following cases for the sortingByInsiderTradingSuspicionFunction function:
- * 
+ *
  * ISTI are all strings - High Risk -> Medium Risk -> Low Risk -> all other strings if ISTI is a string
  * potential winnings serve as a tiebreaker if the string value is the same
  * ISTI are all numbers - descending order
@@ -190,5 +190,17 @@ describe('filter button active class', () => {
     const activeButtons = document.querySelectorAll('#buttons .filter-button.active')
     expect(activeButtons.length).toBe(1)
     expect(activeButtons[0].getAttribute('data-filter')).toBe(FIRST_CATEGORY)
+  })
+})
+
+/**
+ * Test to ensure that the unixTimestampToDate function returns the correct format
+ */
+describe('unixTimestampToDate', () => {
+  it('should convert a unix timestamp to the correct format', () => {
+    const unixTimestamp = '1715769600'
+    const expected = '05/15, 03:40 AM'
+    const result = unixTimestampToDate(unixTimestamp)
+    expect(result).toEqual(expected)
   })
 })
