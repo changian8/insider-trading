@@ -88,6 +88,9 @@ def plot_trends(csv_filename, incident_date_str):
     plt.legend()
     plt.xticks(rotation=45)
     plt.tight_layout()
+    plt.gca().set_facecolor('#ffebcd')
+    plt.gcf().set_facecolor('#ffebcd')
+    plt.tight_layout()
     plt.show()
 
 
