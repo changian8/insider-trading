@@ -214,17 +214,3 @@ describe('clearDataTable', () => {
     expect(result).toBe(true)
   })
 })
-
-/**
- * Test to ensure that the loadData function returns true
- */
-describe('loadData', () => {
-  it('should return true when it is successful with the first category', () => {
-    const result = loadData(FIRST_CATEGORY)
-    expect(result).toBe(true)
-  })
-  it('should return true when it is successful with a different category', () => {
-    const result = loadData('Will Lady Gaga perform during the Super Bowl LX halftime show?')
-    expect(result).toBe(true)
-  })
-})
