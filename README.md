@@ -47,7 +47,7 @@ alternatives in our [tech review](docs\technology-review\technology_review.md).
 The frontend itself has no dependancies, however there are dev dependancies if you wanted to
 run either the linter (eslint) or the testing (jest).
 
-In order to install the dependances, tun the following:
+In order to install the dependances, run the following:
 
 ```
 cd src 

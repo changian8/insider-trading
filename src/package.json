@@ -5,10 +5,15 @@
     "eslint": "^10.0.3",
     "eslint-plugin-jsdoc": "^62.7.1",
     "globals": "^17.4.0",
-    "jest": "^30.3.0"
-  }, 
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0"
+  },
   "scripts": {
     "lint": "eslint index.js",
-    "test": "jest"
+    "test": "jest",
+    "coverage": "jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
   }
 }

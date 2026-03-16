@@ -18,15 +18,16 @@ body {
     
 }
 
-p, h5 {
+p, h5, #scorelogic {
     max-width: 800px;
     margin: 40px auto;
     text-align: left; 
 }
 
-#disclaimers {
-    text-align: center;
-    margin-bottom: 8px;
+#scorelogic ul, li {
+    list-style-type: disc;
+    margin-left: 20px;
+    text-align: left !important;
 }
 
 table {
@@ -51,6 +52,14 @@ td {
     background-color: #fff8dc;
 }
 
+.winner-row td {
+    background-color: lightgreen !important;
+}
+
+.loser-row td {
+    background-color: lightcoral !important;
+}
+
 tr:nth-child(even) {
     background-color: #f2f2f2;
 }
@@ -71,4 +80,28 @@ tr:nth-child(even) {
 
 .active {
     background-color: blue;
+}
+
+#chartsContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+    margin-top: 32px;
+    margin-bottom: 8px;
+    width: 100%;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 24px;
+    height: 400px; /* Set a consistent height for the container and images */
+}
+
+#chartsContainer img {
+    height: 100%;
+    width: auto;
+    max-width: 49%;
+    object-fit: contain;
+    /* remove any default vertical alignment */
+    display: block;
 }
