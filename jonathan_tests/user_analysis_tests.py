@@ -152,7 +152,7 @@ class HistoryAnalysisTests(unittest.TestCase):
 
     def test_no_flagged(self):
         empty_df = pd.read_csv("jonathan_tests/test_empty_trades_df.csv")
-        non_sus_trade  = ['test_user','BUY','condid_ex',1,0.99,1770429543,'slug_ex','eventslug_ex','Yes',0,'test_name',0.99]
+        non_sus_trade  = ['test_user','BUY','condid_ex',1,0.99,1770429543,'title_ex','slug_ex','eventslug_ex','Yes',0,'test_name',0.99]
         empty_df.loc[0] = non_sus_trade
         empty_return = paf.trades_to_userhistory(non_sus_trade)
         empty_copy = empty_df.copy()
