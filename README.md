@@ -1,4 +1,4 @@
-# Insider Trading
+# [Insider Trading](https://changian8.github.io/insider-trading/)
 ## Group Members
 Aaron Kann, Ian Chang, Jonathan Grothe, Josh Tseng 
 ## Project Type
