@@ -322,9 +322,9 @@ def analyze_history(final_trades_df):
         mean = row['user_mean_winnings']
         num_before = row['user_trades_before_this_trade']
         if (user_trades <= 20) and (num_before == 0):
-            if percentile >= mean:
+            if potential_winnings >= mean:
                 insider_score = 'High Risk'
-        if (20 < user_trades <= 50) and (num_before == 0):
+        if (20 < user_trades <= 50) and (num_before <= 10):
             if potential_winnings >= percentile:
                 insider_score = 'High Risk'
             if mean < potential_winnings < percentile:
