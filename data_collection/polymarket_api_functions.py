@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
+import json
 
 # Helper functions
 
@@ -307,3 +308,29 @@ def analyze_history(final_trades_df):
                 insider_score = 'Medium Risk'
         insider_scores.append(insider_score)
     return insider_scores
+
+
+# Plotting
+def get_clobs(slug_list):
+    '''
+    Takes in a list of slugs and returns the clob ids in a list of lists
+    '''
+    clob_list = []
+    for slug in slug_list: 
+        url = f"https://gamma-api.polymarket.com/markets/slug/{slug}"
+        response = requests.get(url)
+        response_json = response.json()
+        clob_list.append(response_json['clobTokenIds'])
+    return clob_list
+
+def price_at_time(clob,starttime,endtime):
+    '''
+    clob: the market clob
+    endtime: last trade in our csv
+    interval: the interval we are interested - distance in both directions from time
+    returns the price history over a specified interval around a time of interest
+    '''
+    history_url = f"https://clob.polymarket.com/prices-history?market={clob}&startTs={starttime}&endTs={endtime}"
+    history = requests.get(history_url)
+    history_json = history.json()
+    print(history_json)
