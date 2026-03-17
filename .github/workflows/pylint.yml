@@ -31,7 +31,6 @@ jobs:
 
   build-frontend:
     runs-on: ubuntu-latest
-    # Move it here under a defaults/run block
     defaults:
       run:
         working-directory: src
