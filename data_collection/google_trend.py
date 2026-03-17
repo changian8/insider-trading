@@ -29,19 +29,18 @@ def get_trend(time_range, key_words, location):
         raise ValueError("location should be uppercase (e.g., 'US').")
 
     pytrends = TrendReq(hl='en-US')
-    try:
-        pytrends.build_payload(key_words, timeframe=time_range, geo=location)
-        data = pytrends.interest_over_time()
 
-        if data.empty:
-            print("No data found for these parameters.")
-            return
+    pytrends.build_payload(key_words, timeframe=time_range, geo=location)
+    data = pytrends.interest_over_time()
 
-        output_filename = f"{key_words[0]}.csv"
-        data.to_csv(output_filename)
-        print(f"File saved: {output_filename}")
-    except Exception as err:  # pylint: disable=broad-exception-caught
-        print(f"Request failed: {err}")
+    if data.empty:
+        print("No data found for these parameters.")
+        return
+
+    output_filename = f"{key_words[0]}.csv"
+    data.to_csv(output_filename)
+    print(f"File saved: {output_filename}")
+
 
 
 def plot_trends(csv_filename, incident_date_str):
@@ -52,11 +51,8 @@ def plot_trends(csv_filename, incident_date_str):
         print(f"Error: The file '{csv_filename}' was not found.")
         return
 
-    try:
-        data_frame = pd.read_csv(csv_filename)
-    except Exception as err:  # pylint: disable=broad-exception-caught
-        print(f"Error reading CSV: {err}")
-        return
+    data_frame = pd.read_csv(csv_filename)
+
 
     if 'date' not in data_frame.columns or 'youtube' not in data_frame.columns:
         print("Error: CSV must contain 'date' and 'youtube' columns.")
@@ -67,9 +63,6 @@ def plot_trends(csv_filename, incident_date_str):
     ignore_cols = ['date', 'youtube', 'isPartial']
     trend_cols = [col for col in data_frame.columns if col not in ignore_cols]
 
-    if not trend_cols:
-        print("No search trend columns found in the CSV.")
-        return
 
     peak_col = data_frame[trend_cols].max().idxmax()
     sorted_indices = (data_frame['date'] - incident_date).abs().argsort()

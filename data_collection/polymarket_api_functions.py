@@ -349,14 +349,27 @@ def get_clobs(slug_list):
         clob_list.append(response_json['clobTokenIds'])
     return clob_list
 
-def price_at_time(clob,starttime,endtime):
-    '''
-    clob: the market clob
-    endtime: last trade in our csv
-    interval: the interval we are interested - distance in both directions from time
-    returns the price history over a specified interval around a time of interest
-    '''
-    history_url = f"https://clob.polymarket.com/prices-history?market={clob}&startTs={starttime}&endTs={endtime}"
-    history = requests.get(history_url)
-    history_json = history.json()
-    print(history_json)
+
+
+def price_at_time(clob, starttime, endtime):
+    url = "https://clob.polymarket.com/prices-history"
+    
+    # Start with 60m, but be ready to jump to 12h (720) or 24h (1440)
+    for fidelity in [60, 720, 1440]:
+        params = {
+            "market": str(clob),
+            "startTs": int(starttime),
+            "endTs": int(endtime),
+            "fidelity": fidelity
+        }
+        
+        response = requests.get(url, params=params)
+        
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('history'):
+                print(f"Success with fidelity {fidelity}!")
+                return data
+        
+    print(f"Could not retrieve history for ID {clob}")
+    return None
