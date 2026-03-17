@@ -145,13 +145,13 @@ class HistoryAnalysisTests(unittest.TestCase):
             paf.trades_to_userhistory(halftime_pmax_test, price_max=max)
 
     def test_empty_df(self):
-        empty_df = pd.read_csv("jonathan_tests/test_empty_trades_df.csv")
+        empty_df = pd.read_csv("tests/test_empty_trades_df.csv")
         with self.assertRaises(TypeError):
             paf.trades_to_userhistory(empty_df)
        
     #note: can't test that the dataframes are exactly identical because a user may trade and change expected output
     def test_no_flagged(self):
-        empty_trade_df = pd.read_csv("jonathan_tests/test_empty_trades_df.csv")
+        empty_trade_df = pd.read_csv("tests/test_empty_trades_df.csv")
         non_sus_trade  = ['test_user','BUY','condid_ex',1.09,0.99,1770429543,'title_ex','slug_ex','eventslug_ex','Yes',0,'test_name',0.99]
         empty_copy = empty_trade_df.copy()
         empty_copy['winnings'] = None
@@ -168,7 +168,7 @@ class HistoryAnalysisTests(unittest.TestCase):
     def test_bigger_df(self):
         halftime_analysis_test = pd.read_csv("data_collection/sb_performance_trades.csv")
         halftime_flagged = paf.trades_to_userhistory(halftime_analysis_test)
-        halftime_expected = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_expected = pd.read_csv("tests/halftime_test.csv")
         self.assertEqual(list(halftime_flagged.columns), list(halftime_expected.columns))
         self.assertEqual(len(halftime_flagged), 25)
 
@@ -182,7 +182,7 @@ class HistoryAnalysisTests(unittest.TestCase):
     
     # check columns (existence, types)
     def test_user_num_trades_column(self):
-        halftime_unt_test = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_unt_test = pd.read_csv("tests/halftime_test.csv")
         halftime_no_unt = halftime_unt_test.rename(columns = {'user_number_of_trades':'wrong_name'})
         with self.assertRaises(ValueError):
             paf.analyze_history(halftime_no_unt)
@@ -192,7 +192,7 @@ class HistoryAnalysisTests(unittest.TestCase):
             paf.analyze_history(halftime_unt_test)
 
     def test_user_90p_column(self):
-        halftime_90p_test = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_90p_test = pd.read_csv("tests/halftime_test.csv")
         halftime_no_90p = halftime_90p_test.rename(columns = {'user_90th_percentile_winnings':'wrong_name'})
         with self.assertRaises(ValueError):
             paf.analyze_history(halftime_no_90p)
@@ -202,7 +202,7 @@ class HistoryAnalysisTests(unittest.TestCase):
             paf.analyze_history(halftime_90p_test)
     
     def test_winnings_column(self):
-        halftime_winnings_test = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_winnings_test = pd.read_csv("tests/halftime_test.csv")
         halftime_no_winnings = halftime_winnings_test.rename(columns = {'winnings':'wrong_name'})
         with self.assertRaises(ValueError):
             paf.analyze_history(halftime_no_winnings)
@@ -212,7 +212,7 @@ class HistoryAnalysisTests(unittest.TestCase):
             paf.analyze_history(halftime_winnings_test)
     
     def test_user_mean_w_column(self):
-        halftime_meanw_test = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_meanw_test = pd.read_csv("tests/halftime_test.csv")
         halftime_no_meanw = halftime_meanw_test.rename(columns = {'user_mean_winnings':'wrong_name'})
         with self.assertRaises(ValueError):
             paf.analyze_history(halftime_no_meanw)
@@ -222,7 +222,7 @@ class HistoryAnalysisTests(unittest.TestCase):
             paf.analyze_history(halftime_meanw_test)
 
     def test_user_utbtt_column(self):
-        halftime_utbtt_test = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_utbtt_test = pd.read_csv("tests/halftime_test.csv")
         halftime_no_utbtt = halftime_utbtt_test.rename(columns = {'user_trades_before_this_trade':'wrong_name'})
         with self.assertRaises(ValueError):
             paf.analyze_history(halftime_no_utbtt)
@@ -232,7 +232,7 @@ class HistoryAnalysisTests(unittest.TestCase):
             paf.analyze_history(halftime_utbtt_test)
 
     def test_analysis_ht(self):
-        halftime_user_info = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_user_info = pd.read_csv("tests/halftime_test.csv")
         analysis_output = paf.analyze_history(halftime_user_info)
         expected_output = ['Low Risk','Low Risk','Low Risk','Low Risk','High Risk','Low Risk',
                            'Low Risk','Low Risk','Low Risk','Low Risk','Low Risk','Low Risk',
