@@ -1,5 +1,5 @@
 """
-Gets the latest 1000 trades of a market for a given event slug
+Gets the latest 1000+ trades of a market for a given event slug
 then converts to a dataframe and writes it out to a csv
 """
 
@@ -41,7 +41,6 @@ def get_trades(event_slug, offset, limit=1000):
                   f"offset={offset}&market={cond_id}")
 
     trades_response = requests.get(trades_url, timeout = 5)
-
     json_trades = trades_response.json()
 
     return json_trades
