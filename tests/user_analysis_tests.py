@@ -6,7 +6,11 @@ import pandas as pd
 from data_collection import polymarket_api_functions as paf
 
 class HistoryAnalysisTests(unittest.TestCase):
-
+    '''
+    tests for the code Jonathan worked on
+    mainly tests user history and analysis,
+    there are sections for each function defined by one line comments
+    '''
     # user_history tests:
 
     def test_type_id(self):
@@ -54,7 +58,7 @@ class HistoryAnalysisTests(unittest.TestCase):
         self.assertEqual(user_response, [['BUY','BUY'],[889.12,21508.02],[0.25,0.19],[666.84,17421.4962],[1772242789,1772240143],
                                          ['Yes','Yes'],
                                          ['us-strikes-iran-by-march-1-2026-492','us-strikes-iran-by-february-28-2026-227-967-547-688-589-491-592-418-452-924-384-915-464-672-196-157-993-596-269-535-381-391-471-256-988-997-296-225-762-973-292-827-345-182-558-215-794-879-189-761'],
-                                         ['0x15aa3c1259a716915e068a0d63c3885d2301d29e8982cbb1717ecb9b63d02d95', '0x3488f31e6449f9803f99a8b5dd232c7ad883637f1c86e6953305a2ef19c77f20']])    
+                                         ['0x15aa3c1259a716915e068a0d63c3885d2301d29e8982cbb1717ecb9b63d02d95', '0x3488f31e6449f9803f99a8b5dd232c7ad883637f1c86e6953305a2ef19c77f20']])
 
     # trades_to_userhistory tests:
 
@@ -142,12 +146,12 @@ class HistoryAnalysisTests(unittest.TestCase):
         and isn't too large
         '''
         halftime_trades_test = pd.read_csv("data_collection/sb_performance_trades.csv")
-        max = "as many trades as possible >:)"
+        test_max = "as many trades as possible >:)"
         with self.assertRaises(TypeError):
-            paf.trades_to_userhistory(halftime_trades_test, max_trades=max)
-        max = 250
+            paf.trades_to_userhistory(halftime_trades_test, max_trades=test_max)
+        test_max = 250
         with self.assertRaises(ValueError):
-            paf.trades_to_userhistory(halftime_trades_test, max_trades=max)
+            paf.trades_to_userhistory(halftime_trades_test, max_trades=test_max)
 
     def test_price_min(self):
         '''
@@ -155,18 +159,18 @@ class HistoryAnalysisTests(unittest.TestCase):
         and is a possible price minimum
         '''
         halftime_pmin_test = pd.read_csv("data_collection/sb_performance_trades.csv")
-        min = "nothing"
+        test_min = "nothing"
         with self.assertRaises(TypeError):
-            paf.trades_to_userhistory(halftime_pmin_test, price_min=min)
-        min = -1
+            paf.trades_to_userhistory(halftime_pmin_test, price_min=test_min)
+        test_min = -1
+        with self.assertRaises(ValueError):
+            paf.trades_to_userhistory(halftime_pmin_test, price_min=test_min)
+        test_min = 10
         with self.assertRaises(ValueError):
             paf.trades_to_userhistory(halftime_pmin_test, price_min=min)
-        min = 10
+        test_min = 1
         with self.assertRaises(ValueError):
-            paf.trades_to_userhistory(halftime_pmin_test, price_min=min)
-        min = 1
-        with self.assertRaises(ValueError):
-            paf.trades_to_userhistory(halftime_pmin_test, price_min=min)
+            paf.trades_to_userhistory(halftime_pmin_test, price_min=test_min)
 
     def test_price_max(self):
         '''
@@ -174,18 +178,18 @@ class HistoryAnalysisTests(unittest.TestCase):
         and is a possible price maximum
         '''
         halftime_pmax_test = pd.read_csv("data_collection/sb_performance_trades.csv")
-        max = "nothing"
+        test_max = "nothing"
         with self.assertRaises(TypeError):
-            paf.trades_to_userhistory(halftime_pmax_test, price_max=max)
-        max = 10
+            paf.trades_to_userhistory(halftime_pmax_test, price_max=test_max)
+        test_max = 10
         with self.assertRaises(ValueError):
-            paf.trades_to_userhistory(halftime_pmax_test, price_max=max)
-        max = -1
+            paf.trades_to_userhistory(halftime_pmax_test, price_max=test_max)
+        test_max = -1
         with self.assertRaises(ValueError):
-            paf.trades_to_userhistory(halftime_pmax_test, price_max=max)
-        max = 0
+            paf.trades_to_userhistory(halftime_pmax_test, price_max=test_max)
+        test_max = 0
         with self.assertRaises(ValueError):
-            paf.trades_to_userhistory(halftime_pmax_test, price_max=max)
+            paf.trades_to_userhistory(halftime_pmax_test, price_max=test_max)
 
     def test_empty_df(self):
         '''
@@ -254,7 +258,7 @@ class HistoryAnalysisTests(unittest.TestCase):
         and contains the correct data type
         '''
         halftime_90p_test = pd.read_csv("tests/halftime_test.csv")
-        halftime_no_90p = halftime_90p_test.rename(columns = 
+        halftime_no_90p = halftime_90p_test.rename(columns =
                                                    {'user_90th_percentile_winnings':'wrong_name'})
         with self.assertRaises(ValueError):
             paf.analyze_history(halftime_no_90p)
@@ -283,7 +287,7 @@ class HistoryAnalysisTests(unittest.TestCase):
         and contains the correct data type
         '''
         halftime_meanw_test = pd.read_csv("tests/halftime_test.csv")
-        halftime_no_meanw = halftime_meanw_test.rename(columns = 
+        halftime_no_meanw = halftime_meanw_test.rename(columns =
                                                        {'user_mean_winnings':'wrong_name'})
         with self.assertRaises(ValueError):
             paf.analyze_history(halftime_no_meanw)
@@ -298,7 +302,7 @@ class HistoryAnalysisTests(unittest.TestCase):
         and contains the correct data type
         '''
         halftime_utbtt_test = pd.read_csv("tests/halftime_test.csv")
-        halftime_no_utbtt = halftime_utbtt_test.rename(columns = 
+        halftime_no_utbtt = halftime_utbtt_test.rename(columns =
                                                        {'user_trades_before_this_trade':'wrong_name'})
         with self.assertRaises(ValueError):
             paf.analyze_history(halftime_no_utbtt)
@@ -319,7 +323,3 @@ class HistoryAnalysisTests(unittest.TestCase):
                            'Low Risk','Low Risk','Low Risk','Low Risk','Low Risk','Low Risk',
                            'Low Risk',]
         self.assertEqual(analysis_output,expected_output)
-
-
-
-
