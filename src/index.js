@@ -121,7 +121,7 @@ const toStringDollarValue = function (value) {
  * Takes a unix timestamp and returns the date in m/d/y/h:m:s
  *
  * @param {string} unixTimestamp - The unix timestamp to convert
- * @returns {string} - The date in m/d/y/h:m:s
+ * @returns {string} - The date in m/d, h:m AM/PM
  */
 const unixTimestampToDate = function (unixTimestamp) {
   const date = new Date(parseInt(unixTimestamp, 10) * 1000)

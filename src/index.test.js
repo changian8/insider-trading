@@ -207,8 +207,8 @@ describe('putJsonDataInTable', () => {
 
 describe('unixTimestampToDate', () => {
   it('should convert a unix timestamp to the correct format', () => {
-    const unixTimestamp = '1715769600'
-    const expected = '05/15, 03:40 AM'
+    const unixTimestamp = '1773724412'
+    const expected = '03/16, 10:13 PM'
     const result = unixTimestampToDate(unixTimestamp)
     expect(result).toEqual(expected)
   })
