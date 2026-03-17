@@ -118,6 +118,21 @@ const toStringDollarValue = function (value) {
 }
 
 /**
+ * Takes a unix timestamp and returns the date in m/d/y/h:m:s
+ *
+ * @param {string} unixTimestamp - The unix timestamp to convert
+ * @returns {string} - The date in m/d/y/h:m:s
+ */
+const unixTimestampToDate = function (unixTimestamp) {
+  const date = new Date(parseInt(unixTimestamp, 10) * 1000)
+  return date.toLocaleDateString('en-US', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+/**
  * Takes the JSON data and displays it in the table on the webpage,
  * filtering the data to only show the specified category.
  *
@@ -164,7 +179,12 @@ const putJsonDataInTable = function (jsonData, categoryFilter) {
     headers.forEach((header) => {
       if (JSON_HEADERS_TO_PAGE_HEADERS[header.trim()]) {
         const td = document.createElement('td')
-        td.textContent = isDollarValueCategory.includes(header) ? toStringDollarValue(row[header]) : String(row[header] || '0').trim()
+        if (header === 'timestamp') {
+          td.textContent = unixTimestampToDate(row[header])
+        }
+        else {
+          td.textContent = isDollarValueCategory.includes(header) ? toStringDollarValue(row[header]) : String(row[header] || '0').trim()
+        }
         tr.appendChild(td)
       }
     })
@@ -241,6 +261,7 @@ filterButtons.forEach((button) => {
 module.exports = {
   sortingByInsiderTradingSuspicionFunction,
   toStringDollarValue,
+  unixTimestampToDate,
   clearDataTable,
   putJsonDataInTable,
   loadData,

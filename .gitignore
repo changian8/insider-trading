@@ -210,6 +210,7 @@ __marimo__/
 #Node Modules for the frontend
 src/node_modules
 src/coverage
+src/coverage/
 
 #DS Store
 .DS_Store
