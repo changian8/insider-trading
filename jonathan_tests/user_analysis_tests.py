@@ -149,7 +149,7 @@ class HistoryAnalysisTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             paf.trades_to_userhistory(empty_df)
        
-
+    #note: can't test that they are exactly identical because a user may trade and change expected output
     def test_no_flagged(self):
         empty_trade_df = pd.read_csv("jonathan_tests/test_empty_trades_df.csv")
         non_sus_trade  = ['test_user','BUY','condid_ex',1.09,0.99,1770429543,'title_ex','slug_ex','eventslug_ex','Yes',0,'test_name',0.99]
@@ -171,11 +171,6 @@ class HistoryAnalysisTests(unittest.TestCase):
         halftime_expected = pd.read_csv("jonathan_tests/halftime_test.csv")
         self.assertEqual(list(halftime_flagged.columns), list(halftime_expected.columns))
         self.assertEqual(len(halftime_flagged), 25)
-
-    # plot price history tests:
-
-    # check types
-    # check columns
 
     # analyze_history tests
     
