@@ -3,7 +3,7 @@ const {
   toStringDollarValue,
   unixTimestampToDate,
   // clearDataTable,
-  // putJsonDataInTable,
+  putJsonDataInTable,
   // loadData,
   DATABASE_NAME,
   // FIRST_CATEGORY,
