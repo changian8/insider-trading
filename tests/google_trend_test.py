@@ -1,10 +1,10 @@
 """
 Unit tests for data_collection functions using pytest.
 """
+from unittest.mock import patch
 import os
 import pandas as pd
 import pytest
-from unittest.mock import patch, MagicMock
 from data_collection.google_trend import get_trend, plot_trends
 
 # --- Existing Tests for get_trend (Validation) ---
@@ -48,13 +48,10 @@ def test_get_trend_success(mock_trend_req, tmp_path):
         'test_kw': [10, 20],
         'isPartial': [False, False]
     })
-    
     mock_instance = mock_trend_req.return_value
     mock_instance.interest_over_time.return_value = mock_df
-    
     os.chdir(tmp_path)
     get_trend("2026-01-01 2026-01-02", ["test_kw"], "US")
-    
     assert os.path.exists("test_kw.csv")
     saved_df = pd.read_csv("test_kw.csv")
     assert 'test_kw' in saved_df.columns
@@ -64,12 +61,9 @@ def test_get_trend_no_data(mock_trend_req, capsys):
     """Tests behavior when pytrends returns an empty dataframe."""
     mock_instance = mock_trend_req.return_value
     mock_instance.interest_over_time.return_value = pd.DataFrame()
-    
     get_trend("2026-01-01 2026-01-02", ["empty"], "US")
     captured = capsys.readouterr()
     assert "No data found for these parameters." in captured.out
-
-# --- Tests for plot_trends ---
 
 def test_plot_trends_file_not_found(capsys):
     """Verifies that a missing file doesn't crash the program."""
@@ -82,7 +76,6 @@ def test_plot_trends_missing_columns(tmp_path, capsys):
     d = tmp_path / "wrong_cols.csv"
     df = pd.DataFrame({"wrong": [1, 2], "cols": [3, 4]})
     df.to_csv(d, index=False)
-    
     plot_trends(str(d), "2026-01-01")
     captured = capsys.readouterr()
     assert "Error: CSV must contain 'date' and 'youtube' columns." in captured.out
@@ -90,7 +83,6 @@ def test_plot_trends_missing_columns(tmp_path, capsys):
 @patch('matplotlib.pyplot.show')
 def test_plot_trends_success(mock_show, tmp_path):
     """Verifies successful plotting logic and data processing."""
-    # 1. Create a valid mock CSV
     d = tmp_path / "valid_data.csv"
     df = pd.DataFrame({
         "date": ["2026-01-01", "2026-01-02", "2026-01-03"],
@@ -99,9 +91,5 @@ def test_plot_trends_success(mock_show, tmp_path):
         "isPartial": [False, False, False]
     })
     df.to_csv(d, index=False)
-    
-    # 2. Run the plot function (mock_show prevents a window from popping up)
     plot_trends(str(d), "2026-01-02")
-    
-    # 3. If it reached plt.show(), the logic passed
     assert mock_show.called

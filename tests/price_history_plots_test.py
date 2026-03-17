@@ -2,13 +2,10 @@
 Unit tests for price_history_plots module.
 """
 import os
-import json
-import pytest
-import pandas as pd
 from unittest.mock import patch, MagicMock
-from data_collection.price_history_plots import get_all_market, save_market_plots
 import data_collection.price_history_plots as php
-from unittest.mock import patch, MagicMock
+from data_collection.price_history_plots import get_all_market, save_market_plots
+
 
 def test_get_all_market(capsys):
     """
@@ -30,7 +27,6 @@ def test_get_all_market(capsys):
         php.paf = original_paf
 
 
-
 def test_get_all_market_json_error(capsys):
     """Verifies error handling when clob_list contains invalid JSON strings."""
     clob_list = ['invalid_json', '["id2"]', '["id3"]']
@@ -39,12 +35,14 @@ def test_get_all_market_json_error(capsys):
     results = get_all_market(clob_list, time_start, time_end)
     captured = capsys.readouterr()
     assert "Error in iteration 0" in captured.out
-    assert len(results) <= 3 
+    assert len(results) <= 3
+
 
 @patch('data_collection.price_history_plots.plt.savefig')
 @patch('data_collection.price_history_plots.plt.show')
 def test_save_market_plots_success(mock_show, mock_save, tmp_path):
     """Verifies plot generation and file saving logic without opening windows."""
+    # pylint: disable=unused-argument
     mock_data = [
         {"history": [{"t": 1735084800, "p": 0.5}, {"t": 1735084900, "p": 0.6}]},
         {"history": [{"t": 1735084800, "p": 0.2}]},
@@ -57,6 +55,7 @@ def test_save_market_plots_success(mock_show, mock_save, tmp_path):
     assert "test2_history.png" in saved_files
     assert len(saved_files) == 2
     assert mock_save.called
+
 
 def test_save_market_plots_no_history(capsys):
     """Verifies skip logic when history key is missing."""
