@@ -149,7 +149,7 @@ class HistoryAnalysisTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             paf.trades_to_userhistory(empty_df)
        
-    #note: can't test that they are exactly identical because a user may trade and change expected output
+    #note: can't test that the dataframes are exactly identical because a user may trade and change expected output
     def test_no_flagged(self):
         empty_trade_df = pd.read_csv("jonathan_tests/test_empty_trades_df.csv")
         non_sus_trade  = ['test_user','BUY','condid_ex',1.09,0.99,1770429543,'title_ex','slug_ex','eventslug_ex','Yes',0,'test_name',0.99]
@@ -175,8 +175,72 @@ class HistoryAnalysisTests(unittest.TestCase):
     # analyze_history tests
     
     # check type of df
+    def test_analysis_not_df(self):
+        not_df = [["I like"],["lists"],[123]]
+        with self.assertRaises(TypeError):
+            paf.analyze_history(not_df)
+    
     # check columns (existence, types)
-    # check a few normal examples - all low risk, some of all, etc.
+    def test_user_num_trades_column(self):
+        halftime_unt_test = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_no_unt = halftime_unt_test.rename(columns = {'user_number_of_trades':'wrong_name'})
+        with self.assertRaises(ValueError):
+            paf.analyze_history(halftime_no_unt)
+        wrong_type = ['h']*len(halftime_unt_test)
+        halftime_unt_test['user_number_of_trades'] = wrong_type
+        with self.assertRaises(TypeError):
+            paf.analyze_history(halftime_unt_test)
 
-suite = unittest.TestLoader().loadTestsFromTestCase(HistoryAnalysisTests)
-_ = unittest.TextTestRunner().run(suite)
+    def test_user_90p_column(self):
+        halftime_90p_test = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_no_90p = halftime_90p_test.rename(columns = {'user_90th_percentile_winnings':'wrong_name'})
+        with self.assertRaises(ValueError):
+            paf.analyze_history(halftime_no_90p)
+        wrong_type = ['q']*len(halftime_90p_test)
+        halftime_90p_test['user_90th_percentile_winnings'] = wrong_type
+        with self.assertRaises(TypeError):
+            paf.analyze_history(halftime_90p_test)
+    
+    def test_winnings_column(self):
+        halftime_winnings_test = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_no_winnings = halftime_winnings_test.rename(columns = {'winnings':'wrong_name'})
+        with self.assertRaises(ValueError):
+            paf.analyze_history(halftime_no_winnings)
+        wrong_type = ['q']*len(halftime_winnings_test)
+        halftime_winnings_test['winnings'] = wrong_type
+        with self.assertRaises(TypeError):
+            paf.analyze_history(halftime_winnings_test)
+    
+    def test_user_mean_w_column(self):
+        halftime_meanw_test = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_no_meanw = halftime_meanw_test.rename(columns = {'user_mean_winnings':'wrong_name'})
+        with self.assertRaises(ValueError):
+            paf.analyze_history(halftime_no_meanw)
+        wrong_type = ['q']*len(halftime_meanw_test)
+        halftime_meanw_test['user_mean_winnings'] = wrong_type
+        with self.assertRaises(TypeError):
+            paf.analyze_history(halftime_meanw_test)
+
+    def test_user_utbtt_column(self):
+        halftime_utbtt_test = pd.read_csv("jonathan_tests/halftime_test.csv")
+        halftime_no_utbtt = halftime_utbtt_test.rename(columns = {'user_trades_before_this_trade':'wrong_name'})
+        with self.assertRaises(ValueError):
+            paf.analyze_history(halftime_no_utbtt)
+        wrong_type = ['q']*len(halftime_utbtt_test)
+        halftime_utbtt_test['user_trades_before_this_trade'] = wrong_type
+        with self.assertRaises(TypeError):
+            paf.analyze_history(halftime_utbtt_test)
+
+    def test_analysis_ht(self):
+        halftime_user_info = pd.read_csv("jonathan_tests/halftime_test.csv")
+        analysis_output = paf.analyze_history(halftime_user_info)
+        expected_output = ['Low Risk','Low Risk','Low Risk','Low Risk','High Risk','Low Risk',
+                           'Low Risk','Low Risk','Low Risk','Low Risk','Low Risk','Low Risk',
+                           'Low Risk','Low Risk','Low Risk','Low Risk','Low Risk','Low Risk',
+                           'Low Risk','Low Risk','Low Risk','Low Risk','Low Risk','Low Risk',
+                           'Low Risk',]
+        self.assertEqual(analysis_output,expected_output)
+    
+
+
+

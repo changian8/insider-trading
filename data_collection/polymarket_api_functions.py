@@ -183,6 +183,7 @@ def sanity_check_trades_df(trades_df, price_max, price_min, max_trades):
         raise TypeError("Invalid type for max_trades")
     return True
 
+
 def trades_to_userhistory(trades_df, price_max=0.85, price_min=0.1, max_trades=25):
     '''
     Parameters: 
@@ -293,6 +294,48 @@ def plot_price_history(trades_csv,market_name):
     plt.show()
     return 'Success'
 
+def sanity_check_pre_analysis_df(final_trades_df):
+    '''
+    Parameters:
+    trades_df: a pandas dataframe of all the trades in the market (above a certain volume)
+    Returns:
+    A boolean indicating if the trades dataframe is valid
+    '''
+    if not isinstance(final_trades_df, pd.DataFrame):
+        raise TypeError(f"final_trades_df is a {type(final_trades_df)} not a pandas data frame")
+
+    if 'user_number_of_trades' in final_trades_df.columns:
+        if  final_trades_df['user_number_of_trades'].dtype != np.int64:
+            raise TypeError("user number of trades column is not an int")
+    else:
+        raise ValueError("data frame doesn't contain user number of trades column")
+
+    if 'user_90th_percentile_winnings' in final_trades_df.columns:
+        if  final_trades_df['user_90th_percentile_winnings'].dtype != np.float64:
+            raise TypeError("user 90th percentile winnings column is not a numpy float")
+    else:
+        raise ValueError("data frame doesn't contain user 90th percentile winnings column")
+
+    if 'winnings' in final_trades_df.columns:
+        if  final_trades_df['winnings'].dtype != np.float64:
+            raise TypeError("winnings column is not a numpy float")
+    else:
+        raise ValueError("data frame doesn't contain winnings column")
+
+    if 'user_mean_winnings' in final_trades_df.columns:
+        if  final_trades_df['user_mean_winnings'].dtype != np.float64:
+            raise TypeError("user mean winnings column is not a numpy float")
+    else:
+        raise ValueError("data frame doesn't contain user main winnings column")
+    
+    if 'user_trades_before_this_trade' in final_trades_df.columns:
+        if  final_trades_df['user_trades_before_this_trade'].dtype != np.int64:
+            raise TypeError("user trades before column is not a numpy int")
+    else:
+        raise ValueError("data frame doesn't contain user trades before this trade column")
+    return True
+
+
 def analyze_history(final_trades_df):
     '''
     Iterates through the final trades csv and returns a list evaluating each trade
@@ -305,14 +348,7 @@ def analyze_history(final_trades_df):
     # logic for adding to insider score:
     # add number of trades before this one and number after to n_trades filtering
     # add 90th percentile volume to percentile
-
-    # check type of df
-    # check existence/types of:
-    # u_n_o_tr
-    # u_9_pc_w
-    # w
-    # u_m_w
-    # u_t_b_t_t
+    sanity_check_pre_analysis_df(final_trades_df)
     insider_scores = []
     for _, row in final_trades_df.iterrows():
         insider_score = 'Low Risk'
