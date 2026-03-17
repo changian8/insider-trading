@@ -31,15 +31,17 @@ jobs:
 
   build-frontend:
     runs-on: ubuntu-latest
-    working-directory: src
+    # Move it here under a defaults/run block
+    defaults:
+      run:
+        working-directory: src
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
         node-version: "22.19.0"
     - name: Install dependencies
-      run: |
-        npm install
+      run: npm install
     - name: Run tests
       run: |
         npm run lint
