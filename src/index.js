@@ -118,10 +118,10 @@ const toStringDollarValue = function (value) {
 }
 
 /**
- * Takes a unix timestamp and returns the date in m/d/y/h:m:s
+ * Takes a unix timestamp and returns the date in m/d, h:m AM/PM, in PST
  *
  * @param {string} unixTimestamp - The unix timestamp to convert
- * @returns {string} - The date in m/d, h:m AM/PM
+ * @returns {string} - The date in m/d, h:m AM/PM, in PST
  */
 const unixTimestampToDate = function (unixTimestamp) {
   const date = new Date(parseInt(unixTimestamp, 10) * 1000)
@@ -130,8 +130,11 @@ const unixTimestampToDate = function (unixTimestamp) {
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+    hour12: true,
+    timeZone: 'America/Los_Angeles',
   })
 }
+
 /**
  * Takes the JSON data and displays it in the table on the webpage,
  * filtering the data to only show the specified category.
