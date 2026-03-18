@@ -126,7 +126,7 @@ class HistoryAnalysisTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             paf.trades_to_userhistory(halftime_side_test)
 
-    def test_proxyWallet_column(self):
+    def test_proxy_wallet_column(self):
         '''
         tests to ensure that the proxyWallet column is in the dataframe
         and contains the correct data type

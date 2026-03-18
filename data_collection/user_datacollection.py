@@ -5,7 +5,7 @@ and writes a final csv for our website
 '''
 import numpy as np
 import pandas as pd
-import polymarket_api_functions as paf
+import polymarket_api_functions as paf # pylint: disable=import-error
 
 halftime = pd.read_csv("data_collection/sb_performance_trades.csv")
 iran_strike = pd.read_csv("data_collection/us_strikes_iran_trades.csv")
