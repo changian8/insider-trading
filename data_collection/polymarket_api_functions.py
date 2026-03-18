@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
-import json
 
 # Helper functions
 
@@ -128,7 +127,7 @@ def sanity_check_trades_df(trades_df, price_max, price_min, max_trades):
     A boolean indicating if the trades dataframe is valid
     '''
     if not isinstance(trades_df, pd.DataFrame):
-        raise TypeError("trades_df is not a pandas data frame")
+        raise TypeError(f"trades_df is a {type(trades_df)} not a pandas data frame")
 
     if 'size' in trades_df.columns:
         if  trades_df['size'].dtype != np.float64:
@@ -153,8 +152,7 @@ def sanity_check_trades_df(trades_df, price_max, price_min, max_trades):
             raise TypeError("side column is not a string")
     else:
         raise ValueError("data frame doesn't contain side column")
-    
-    
+
     if 'proxyWallet' in trades_df.columns:
         if not (trades_df['proxyWallet'].dtype == 'object' or pd.api.types.is_string_dtype(trades_df['proxyWallet'])):
             raise TypeError("proxyWallet column is not a string")
@@ -182,6 +180,7 @@ def sanity_check_trades_df(trades_df, price_max, price_min, max_trades):
     else:
         raise TypeError("Invalid type for max_trades")
     return True
+
 
 def trades_to_userhistory(trades_df, price_max=0.85, price_min=0.1, max_trades=25):
     '''
@@ -293,6 +292,48 @@ def plot_price_history(trades_csv,market_name):
     plt.show()
     return 'Success'
 
+def sanity_check_pre_analysis_df(final_trades_df):
+    '''
+    Parameters:
+    trades_df: a pandas dataframe of all the trades in the market (above a certain volume)
+    Returns:
+    A boolean indicating if the trades dataframe is valid
+    '''
+    if not isinstance(final_trades_df, pd.DataFrame):
+        raise TypeError(f"final_trades_df is a {type(final_trades_df)} not a pandas data frame")
+
+    if 'user_number_of_trades' in final_trades_df.columns:
+        if  final_trades_df['user_number_of_trades'].dtype != np.int64:
+            raise TypeError("user number of trades column is not an int")
+    else:
+        raise ValueError("data frame doesn't contain user number of trades column")
+
+    if 'user_90th_percentile_winnings' in final_trades_df.columns:
+        if  final_trades_df['user_90th_percentile_winnings'].dtype != np.float64:
+            raise TypeError("user 90th percentile winnings column is not a numpy float")
+    else:
+        raise ValueError("data frame doesn't contain user 90th percentile winnings column")
+
+    if 'winnings' in final_trades_df.columns:
+        if  final_trades_df['winnings'].dtype != np.float64:
+            raise TypeError("winnings column is not a numpy float")
+    else:
+        raise ValueError("data frame doesn't contain winnings column")
+
+    if 'user_mean_winnings' in final_trades_df.columns:
+        if  final_trades_df['user_mean_winnings'].dtype != np.float64:
+            raise TypeError("user mean winnings column is not a numpy float")
+    else:
+        raise ValueError("data frame doesn't contain user main winnings column")
+
+    if 'user_trades_before_this_trade' in final_trades_df.columns:
+        if  final_trades_df['user_trades_before_this_trade'].dtype != np.int64:
+            raise TypeError("user trades before column is not a numpy int")
+    else:
+        raise ValueError("data frame doesn't contain user trades before this trade column")
+    return True
+
+
 def analyze_history(final_trades_df):
     '''
     Iterates through the final trades csv and returns a list evaluating each trade
@@ -305,14 +346,7 @@ def analyze_history(final_trades_df):
     # logic for adding to insider score:
     # add number of trades before this one and number after to n_trades filtering
     # add 90th percentile volume to percentile
-
-    # check type of df
-    # check existence/types of:
-    # u_n_o_tr
-    # u_9_pc_w
-    # w
-    # u_m_w
-    # u_t_b_t_t
+    sanity_check_pre_analysis_df(final_trades_df)
     insider_scores = []
     for _, row in final_trades_df.iterrows():
         insider_score = 'Low Risk'
@@ -322,9 +356,9 @@ def analyze_history(final_trades_df):
         mean = row['user_mean_winnings']
         num_before = row['user_trades_before_this_trade']
         if (user_trades <= 20) and (num_before == 0):
-            if percentile >= mean:
+            if potential_winnings >= mean:
                 insider_score = 'High Risk'
-        if (20 < user_trades <= 50) and (num_before == 0):
+        if (20 < user_trades <= 50) and (num_before <= 10):
             if potential_winnings >= percentile:
                 insider_score = 'High Risk'
             if mean < potential_winnings < percentile:
@@ -342,34 +376,21 @@ def get_clobs(slug_list):
     Takes in a list of slugs and returns the clob ids in a list of lists
     '''
     clob_list = []
-    for slug in slug_list: 
+    for slug in slug_list:
         url = f"https://gamma-api.polymarket.com/markets/slug/{slug}"
-        response = requests.get(url)
+        response = requests.get(url, timeout=(3,5))
         response_json = response.json()
         clob_list.append(response_json['clobTokenIds'])
     return clob_list
 
-
-
-def price_at_time(clob, starttime, endtime):
-    url = "https://clob.polymarket.com/prices-history"
-    
-    # Start with 60m, but be ready to jump to 12h (720) or 24h (1440)
-    for fidelity in [60, 720, 1440]:
-        params = {
-            "market": str(clob),
-            "startTs": int(starttime),
-            "endTs": int(endtime),
-            "fidelity": fidelity
-        }
-        
-        response = requests.get(url, params=params)
-        
-        if response.status_code == 200:
-            data = response.json()
-            if data.get('history'):
-                print(f"Success with fidelity {fidelity}!")
-                return data
-        
-    print(f"Could not retrieve history for ID {clob}")
-    return None
+def price_at_time(clob,starttime,endtime):
+    '''
+    clob: the market clob
+    endtime: last trade in our csv
+    interval: the interval we are interested - distance in both directions from time
+    returns the price history over a specified interval around a time of interest
+    '''
+    history_url = f"https://clob.polymarket.com/prices-history?market={clob}&startTs={starttime}&endTs={endtime}"
+    history = requests.get(history_url, timeout=(3,5))
+    history_json = history.json()
+    print(history_json)
