@@ -69,10 +69,18 @@ and then
 npm run lint
 ```
 
-to run the linter and/or 
+to run the linter,
 
 ```
 npm run test
 ```
 
-to run the tests.  
+to run the tests,
+
+and finally 
+
+```
+npm run coverage
+```
+
+to test for code coverage.  

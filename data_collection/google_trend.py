@@ -87,7 +87,6 @@ def plot_trends(csv_filename, incident_date_str):
 
 
 if __name__ == '__main__':
-    # Using UPPER_CASE for constants to satisfy Pylint C0103
     GEO = 'US'
 
     # Superbowl Analysis

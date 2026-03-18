@@ -3,7 +3,7 @@ const {
   toStringDollarValue,
   unixTimestampToDate,
   // clearDataTable,
-  // putJsonDataInTable,
+  putJsonDataInTable,
   // loadData,
   DATABASE_NAME,
   // FIRST_CATEGORY,
@@ -161,8 +161,8 @@ describe('DATABASE_NAME', () => {
 /**
  * Makes sure there is a valid path for each value for the chart filename dictionaries
  */
-describe('DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME', () => {
-  it('should be a dictionary with valid paths for each value', () => {
+describe('DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME and DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME', () => {
+  it('these should be dictionaries with valid paths for each value', () => {
     expect(DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME).toBeDefined()
     expect(DATA_FILTER_TO_GOOGLE_SEARCH_CHART_FILENAME).toBeDefined()
     for (const key in DATA_FILTER_TO_PRICEHISTORY_CHART_FILENAME) {
@@ -194,12 +194,21 @@ describe('filter button active class', () => {
 })
 
 /**
- * Test to ensure that the unixTimestampToDate function returns the correct format
+ * Test to ensure that the putJsonDataInTable function returns true
  */
+describe('putJsonDataInTable', () => {
+  it('should return true when it is successful', () => {
+    const jsonData = [{ title: 'Maduro in U.S. custody by January 31?', outcome: 'Yes' }]
+    const categoryFilter = 'Maduro in U.S. custody by January 31?'
+    const result = putJsonDataInTable(jsonData, categoryFilter)
+    expect(result).toBe(true)
+  })
+})
+
 describe('unixTimestampToDate', () => {
   it('should convert a unix timestamp to the correct format', () => {
-    const unixTimestamp = '1715769600'
-    const expected = '05/15, 03:40 AM'
+    const unixTimestamp = '1773724412'
+    const expected = '03/16, 10:13 PM'
     const result = unixTimestampToDate(unixTimestamp)
     expect(result).toEqual(expected)
   })

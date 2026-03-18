@@ -10,7 +10,8 @@
   },
   "scripts": {
     "lint": "eslint index.js index.test.js",
-    "test": "jest"
+    "test": "jest",
+    "coverage": "jest --coverage"
   },
   "jest": {
     "testEnvironment": "jsdom"
