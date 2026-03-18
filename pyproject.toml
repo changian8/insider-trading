@@ -20,6 +20,14 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[tool.pylint]
+disable = "C0301, C0301, R0904, R0912, R0914, R0915" 
+# C0301: line length: some id strings need to be quite long
+# C0301: invalid name: name follows polymarket naming conventions combined with pylint conventions
+# R0904, R0912, R0914, R0915: 
+# too many methods, branches, local vars, statements: 
+# for our purposes it makes sense to overload it a bit for clean data collection and modularity
+
 [project.urls]
 Homepage = "https://github.com/changian8/insider-trading"
 Issues = "https://github.com/changian8/insider-trading/issues"

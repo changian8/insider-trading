@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import requests
-import json
 
 # Helper functions
 
@@ -153,8 +152,7 @@ def sanity_check_trades_df(trades_df, price_max, price_min, max_trades):
             raise TypeError("side column is not a string")
     else:
         raise ValueError("data frame doesn't contain side column")
-    
-    
+
     if 'proxyWallet' in trades_df.columns:
         if not (trades_df['proxyWallet'].dtype == 'object' or pd.api.types.is_string_dtype(trades_df['proxyWallet'])):
             raise TypeError("proxyWallet column is not a string")
@@ -327,7 +325,7 @@ def sanity_check_pre_analysis_df(final_trades_df):
             raise TypeError("user mean winnings column is not a numpy float")
     else:
         raise ValueError("data frame doesn't contain user main winnings column")
-    
+
     if 'user_trades_before_this_trade' in final_trades_df.columns:
         if  final_trades_df['user_trades_before_this_trade'].dtype != np.int64:
             raise TypeError("user trades before column is not a numpy int")
@@ -378,34 +376,21 @@ def get_clobs(slug_list):
     Takes in a list of slugs and returns the clob ids in a list of lists
     '''
     clob_list = []
-    for slug in slug_list: 
+    for slug in slug_list:
         url = f"https://gamma-api.polymarket.com/markets/slug/{slug}"
-        response = requests.get(url)
+        response = requests.get(url, timeout=(3,5))
         response_json = response.json()
         clob_list.append(response_json['clobTokenIds'])
     return clob_list
 
-
-
-def price_at_time(clob, starttime, endtime):
-    url = "https://clob.polymarket.com/prices-history"
-    
-    # Start with 60m, but be ready to jump to 12h (720) or 24h (1440)
-    for fidelity in [60, 720, 1440]:
-        params = {
-            "market": str(clob),
-            "startTs": int(starttime),
-            "endTs": int(endtime),
-            "fidelity": fidelity
-        }
-        
-        response = requests.get(url, params=params)
-        
-        if response.status_code == 200:
-            data = response.json()
-            if data.get('history'):
-                print(f"Success with fidelity {fidelity}!")
-                return data
-        
-    print(f"Could not retrieve history for ID {clob}")
-    return None
+def price_at_time(clob,starttime,endtime):
+    '''
+    clob: the market clob
+    endtime: last trade in our csv
+    interval: the interval we are interested - distance in both directions from time
+    returns the price history over a specified interval around a time of interest
+    '''
+    history_url = f"https://clob.polymarket.com/prices-history?market={clob}&startTs={starttime}&endTs={endtime}"
+    history = requests.get(history_url, timeout=(3,5))
+    history_json = history.json()
+    print(history_json)
